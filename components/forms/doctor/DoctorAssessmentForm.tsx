@@ -3,6 +3,7 @@ import { Patient, Assessment, Role, DoctorAssessmentData } from '../../../types'
 import { useHomeHealthcare } from '../../../context/HomeHealthcareContext';
 import { Save, X } from 'lucide-react';
 import { Accordion, Fieldset, RadioGroup, CheckboxGroup } from '../FormControls';
+import { useToast } from '../../../context/ToastContext';
 
 interface AssessmentFormProps {
     patient: Patient;
@@ -15,6 +16,7 @@ const redFlagOptions = ['Fever ≥38', 'SpO₂ <90', 'Chest pain', 'Active bleed
 
 const DoctorAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCancel }) => {
     const { state } = useHomeHealthcare();
+    const { showToast } = useToast();
     const [formData, setFormData] = useState<Partial<DoctorAssessmentData>>({
         role: Role.Doctor,
         status: 'Unchanged',
@@ -46,6 +48,7 @@ const DoctorAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, 
             ...formData,
         } as DoctorAssessmentData;
         onSave(newAssessment);
+        showToast("Assessment Saved!");
     };
 
     return (

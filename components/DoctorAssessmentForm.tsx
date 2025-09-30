@@ -40,12 +40,12 @@ const DoctorAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, 
             plan,
             mdNote,
             chiefFocus: [],
-            // FIX: Added the required 'assessment' property with default values.
+            // FIX: Added the required 'assessment' and 'followUpTiming' properties with default values.
             assessment: {
                 etiology: [],
                 severity: 'Mild',
             },
-            followUpTiming: '2–4w', // Simplified
+            followUpTiming: '2–4w', 
         };
         onSave(newAssessment);
     };

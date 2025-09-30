@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// FIX: Use createRoot from react-dom/client for React 18+ compatibility.
 import { createRoot } from 'react-dom/client';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
 import { Patient, Role, Visit, DoctorFollowUpData, NurseFollowUpData, PtFollowUpData, SwFollowUpData } from '../types';
@@ -12,6 +11,7 @@ import SwFollowUpForm from './forms/sw/SwFollowUpForm';
 import VisitPrintView from './VisitPrintView';
 import PtPrintView from './PtPrintView';
 import SwPrintView from './SwPrintView';
+import { useToast } from '../context/ToastContext';
 
 const StructuredNoteDisplay: React.FC<{ visit: Visit }> = ({ visit }) => {
     return (
@@ -63,7 +63,6 @@ const StructuredNoteDisplay: React.FC<{ visit: Visit }> = ({ visit }) => {
                     <h4 className="font-bold text-gray-600 flex items-center gap-1"><Accessibility size={14}/> مذكرة الأخصائي الاجتماعي</h4>
                      <div className="pr-2 border-r-2 border-yellow-200 space-y-1 text-gray-700">
                         <p><strong>الحالة:</strong> {visit.swNote.situationChange}</p>
-                        {/* FIX: The property is named actionsTaken, not actions. */}
                         <p><strong>الإجراء:</strong> {visit.swNote.actionsTaken.join(', ')}</p>
                         {visit.swNote.swNote && <p className="italic">"{visit.swNote.swNote}"</p>}
                     </div>
@@ -79,6 +78,7 @@ const StructuredNoteDisplay: React.FC<{ visit: Visit }> = ({ visit }) => {
 const VisitCard: React.FC<{ visit: Visit, patient: Patient | undefined }> = ({ visit, patient }) => {
     const { state, dispatch } = useHomeHealthcare();
     const [isEditing, setIsEditing] = useState(false);
+    const { showToast } = useToast();
     
     if (!patient) return null;
 
@@ -121,6 +121,7 @@ const VisitCard: React.FC<{ visit: Visit, patient: Patient | undefined }> = ({ v
             }
         });
         setIsEditing(false);
+        showToast('Visit note saved successfully!');
     };
 
     const handlePrint = (printView: React.ReactElement) => {
@@ -198,9 +199,14 @@ const TodayVisits: React.FC = () => {
                 const teamVisits = todayVisits.filter(v => v.teamId === team.id);
                 if(teamVisits.length === 0) return null;
                 
+                const completedCount = teamVisits.filter(v => v.status === 'Completed').length;
+
                 return (
                     <div key={team.id} className="mb-8">
-                        <h2 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-2">{team.name}</h2>
+                        <div className="flex justify-between items-center mb-3 border-b pb-2">
+                             <h2 className="text-lg font-semibold text-gray-700">{team.name}</h2>
+                             <span className="text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{completedCount} of {teamVisits.length} Completed</span>
+                        </div>
                         <div className="space-y-4">
                             {teamVisits.map(visit => (
                                 <VisitCard key={visit.patientId} visit={visit} patient={state.patients.find(p => p.nationalId === visit.patientId)}/>

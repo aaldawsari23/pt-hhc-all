@@ -7,6 +7,8 @@ import TodayVisits from './components/TodayVisits';
 import Scheduler from './components/Scheduler';
 import DriverView from './components/DriverView';
 import { Role } from './types';
+import { ToastProvider } from './context/ToastContext';
+import Toast from './components/Toast';
 
 const AppContent: React.FC = () => {
     const { state } = useHomeHealthcare();
@@ -41,7 +43,10 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
     return (
         <HomeHealthcareProvider>
-            <AppContent />
+            <ToastProvider>
+                <AppContent />
+                <Toast />
+            </ToastProvider>
         </HomeHealthcareProvider>
     );
 };

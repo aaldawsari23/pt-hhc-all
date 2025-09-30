@@ -3,6 +3,7 @@ import { Patient, Assessment, VitalSigns, Role, NurseAssessmentData } from '../.
 import { useHomeHealthcare } from '../../../context/HomeHealthcareContext';
 import { Save, X } from 'lucide-react';
 import { Accordion, Fieldset, RadioGroup, CheckboxGroup } from '../FormControls';
+import { useToast } from '../../../context/ToastContext';
 
 
 interface AssessmentFormProps {
@@ -13,13 +14,13 @@ interface AssessmentFormProps {
 
 const NurseAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCancel }) => {
     const { state } = useHomeHealthcare();
+    const { showToast } = useToast();
     const [formData, setFormData] = useState<Partial<NurseAssessmentData>>({
         role: Role.Nurse,
         vitals: { bp: '', hr: '', temp: '', rr: '', o2sat: '', pain: '0' },
         status: 'Unchanged',
         impression: 'Stable',
         plan: 'Continue same plan',
-        // FIX: Removed 'followUpTiming' as it's not a property of NurseAssessmentData.
     });
 
     const handleVitalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,6 +39,7 @@ const NurseAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, o
             ...formData
         } as NurseAssessmentData;
         onSave(newAssessment);
+        showToast("Assessment Saved!");
     };
 
     return (

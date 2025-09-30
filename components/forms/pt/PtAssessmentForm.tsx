@@ -3,6 +3,7 @@ import { Patient, Assessment, Role, PtAssessmentData } from '../../../types';
 import { useHomeHealthcare } from '../../../context/HomeHealthcareContext';
 import { Save, X } from 'lucide-react';
 import { Accordion, Fieldset, RadioGroup, CheckboxGroup } from '../FormControls';
+import { useToast } from '../../../context/ToastContext';
 
 interface AssessmentFormProps {
     patient: Patient;
@@ -10,11 +11,12 @@ interface AssessmentFormProps {
     onCancel: () => void;
 }
 
-const dxFocusOptions = ['TKA/THA/ACL/RCR/Stroke/LBP/Neck'] as const;
+const dxFocusOptions = ['TKA', 'THA', 'Shoulder Replacement', 'Spine Surgery', 'Ortho Trauma', 'ACL', 'RCR', 'Stroke', 'TBI', 'SCI', 'Parkinson\'s', 'MS', 'General Debility', 'Fall Prevention', 'Amputation', 'LBP', 'Neck Pain', 'Cardiopulmonary', 'Wound Care'] as const;
 const interventionsOptions = ['ROM', 'Stretch', 'Strength', 'Balance', 'Gait', 'TENS', 'NMES', 'US', 'Ice', 'Heat', 'soft tissue', 'joint mobs'] as const;
 
 const PtAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCancel }) => {
     const { state } = useHomeHealthcare();
+    const { showToast } = useToast();
     const [formData, setFormData] = useState<Partial<PtAssessmentData>>({
         role: Role.PhysicalTherapist,
         status: 'Unchanged',
@@ -55,6 +57,7 @@ const PtAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCa
             ...formData,
         } as PtAssessmentData;
         onSave(newAssessment);
+        showToast("Assessment Saved!");
     };
 
     return (

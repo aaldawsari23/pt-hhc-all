@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, X, Filter, Tag, Users, MapPin, BarChart2, Check, UserPlus, Save, Trash2, List } from 'lucide-react';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
+import { useToast } from '../context/ToastContext';
 
 const FilterChip: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
     <button
@@ -47,7 +48,7 @@ const BulkActions: React.FC = () => {
                     <UserPlus size={16} />
                     Add to Today's Visits
                 </button>
-                 <button onClick={() => dispatch({type: 'CLEAR_SELECTIONS'})} className="w-full text-center text-xs text-gray-500 hover:text-red-500">
+                 <button onClick={() => dispatch({type: 'CLEAR_SELECTIONS'})} className="w-full text-center text-sm font-semibold py-2 px-4 rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300">
                     Clear Selection
                 </button>
             </div>
@@ -86,14 +87,15 @@ const CustomLists: React.FC = () => {
                     </button>
                 </div>
             )}
-             <div className="flex flex-wrap gap-2">
+             <div className="space-y-2">
                 {state.customLists.map(list => (
-                    <div key={list.id} className="group flex items-center bg-gray-200 rounded-full text-xs">
-                        <button onClick={() => dispatch({ type: 'APPLY_CUSTOM_LIST', payload: { id: list.id }})} className="px-3 py-1 hover:bg-gray-300 rounded-l-full">
-                            {list.name} <span className="text-gray-500">({list.patientIds.length})</span>
+                    <div key={list.id} className="group flex items-center justify-between bg-gray-100 rounded-lg text-xs">
+                        <button onClick={() => dispatch({ type: 'APPLY_CUSTOM_LIST', payload: { id: list.id }})} className="px-3 py-2 text-left flex-grow hover:bg-gray-200 rounded-l-lg">
+                            <p className="font-semibold">{list.name} <span className="text-gray-500 font-normal">({list.patientIds.length})</span></p>
+                            <p className="text-gray-400 text-[10px]">{new Date(list.createdAt).toLocaleDateString()}</p>
                         </button>
-                         <button onClick={() => dispatch({ type: 'DELETE_CUSTOM_LIST', payload: { id: list.id }})} className="px-2 py-1 text-gray-500 hover:bg-red-200 hover:text-red-600 rounded-r-full">
-                            <Trash2 size={12} />
+                         <button onClick={() => dispatch({ type: 'DELETE_CUSTOM_LIST', payload: { id: list.id }})} className="px-2 py-1 text-gray-500 hover:bg-red-100 hover:text-red-600 rounded-r-lg h-full">
+                            <Trash2 size={14} />
                         </button>
                     </div>
                 ))}
@@ -105,6 +107,7 @@ const CustomLists: React.FC = () => {
 
 const Sidebar: React.FC = () => {
     const { state, dispatch, filteredPatients } = useHomeHealthcare();
+    const { showToast } = useToast();
     const { filters, areas, selectedPatientIds } = state;
     
     const allTags = useMemo(() => {
@@ -122,7 +125,6 @@ const Sidebar: React.FC = () => {
         const stateToExport = {
             ...state,
             selectedPatientIds: Array.from(state.selectedPatientIds),
-            customLists: state.customLists,
         };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(stateToExport, null, 2));
         const downloadAnchorNode = document.createElement('a');
@@ -131,6 +133,7 @@ const Sidebar: React.FC = () => {
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
+        showToast("Data exported successfully!");
     };
 
     const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,10 +144,10 @@ const Sidebar: React.FC = () => {
                 try {
                     const importedState = JSON.parse(e.target?.result as string);
                     dispatch({ type: 'IMPORT_STATE', payload: importedState });
-                    alert('Data imported successfully!');
+                    showToast('Data imported successfully!');
                 } catch (error) {
                     console.error("Failed to import data:", error);
-                    alert('Failed to import data. The file might be corrupted.');
+                    showToast('Error: Failed to import data. File may be invalid.');
                 }
             };
             reader.readAsText(file);
