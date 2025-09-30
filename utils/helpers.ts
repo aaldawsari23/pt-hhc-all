@@ -42,7 +42,7 @@ export const processInitialData = () => {
     const sex: 'Male' | 'Female' = index % 3 === 0 ? 'Female' : 'Male';
 
     // FIX: Cast status to the correct literal type to match the Patient interface.
-    return { ...p, tags, sex, status: p.status as 'active' | 'deceased', assessments: [] };
+    return { ...p, tags, sex, status: p.status as 'active' | 'deceased', assessments: [], contactAttempts: [] };
   });
 
   return {

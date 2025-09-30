@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { getInitials } from '../utils/helpers';
+import { Visit } from '../types';
 
 const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const Scheduler: React.FC = () => {
-    const { state } = useHomeHealthcare();
+    const { state, dispatch } = useHomeHealthcare();
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [popover, setPopover] = useState<{ x: number, y: number, visit: Visit } | null>(null);
 
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
@@ -32,6 +33,26 @@ const Scheduler: React.FC = () => {
         (acc[visit.date] = acc[visit.date] || []).push(visit);
         return acc;
     }, {} as { [key: string]: typeof state.visits });
+
+    const handleCancelVisit = () => {
+        if (popover) {
+            if (window.confirm("Are you sure you want to cancel this visit?")) {
+                dispatch({ type: 'CANCEL_VISIT', payload: { patientId: popover.visit.patientId, date: popover.visit.date } });
+            }
+            setPopover(null);
+        }
+    };
+
+    const openPopover = (e: React.MouseEvent, visit: Visit) => {
+        e.stopPropagation();
+        setPopover({ x: e.clientX, y: e.clientY, visit });
+    };
+
+    useEffect(() => {
+        const handleClickOutside = () => setPopover(null);
+        window.addEventListener('click', handleClickOutside);
+        return () => window.removeEventListener('click', handleClickOutside);
+    }, []);
 
 
     return (
@@ -60,7 +81,7 @@ const Scheduler: React.FC = () => {
                                     const team = state.teams.find(t => t.id === visit.teamId);
                                     if(!patient) return null;
                                     return (
-                                        <div key={visit.patientId} className="bg-blue-100 text-blue-800 rounded px-1 py-0.5 text-[10px] truncate" title={`${patient.nameAr} - ${team?.name}`}>
+                                        <div key={visit.patientId} onClick={(e) => openPopover(e, visit)} className="bg-blue-100 text-blue-800 rounded px-1 py-0.5 text-[10px] truncate cursor-pointer hover:bg-blue-200" title={`${patient.nameAr} - ${team?.name}`}>
                                             {patient.nameAr}
                                         </div>
                                     )
@@ -70,6 +91,20 @@ const Scheduler: React.FC = () => {
                     );
                 })}
             </div>
+            {popover && (
+                <div 
+                    className="absolute z-20 bg-white rounded-md shadow-lg border p-2 text-sm"
+                    style={{ top: popover.y + 10, left: popover.x }}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <button
+                        onClick={handleCancelVisit}
+                        className="w-full text-left px-2 py-1 rounded hover:bg-red-100 text-red-600"
+                    >
+                        Cancel Visit
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

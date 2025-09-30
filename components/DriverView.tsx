@@ -1,7 +1,9 @@
 import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
 import { Patient, Visit } from '../types';
-import { MapPin, QrCode, Phone } from 'lucide-react';
+import { MapPin, QrCode, Phone, Printer } from 'lucide-react';
+import DriverPrintView from './DriverPrintView';
 
 const DriverVisitCard: React.FC<{ visit: Visit, patient: Patient }> = ({ visit, patient }) => {
     const locationQuery = `${patient.areaId}, ${patient.nameAr}`;
@@ -48,11 +50,36 @@ const DriverView: React.FC = () => {
     }, {} as Record<string, Visit[]>);
 
     const areas = Object.keys(visitsByArea).sort();
+    
+    const handlePrint = () => {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+            printWindow.document.write('<html><head><title>Driver Route</title><script src="https://cdn.tailwindcss.com"></script></head><body><div id="print-root"></div></body></html>');
+            printWindow.document.close();
+            const printRoot = printWindow.document.getElementById('print-root');
+            if (printRoot) {
+                const root = createRoot(printRoot);
+                root.render(<DriverPrintView visits={todayVisits} patients={state.patients} date={today} />);
+                setTimeout(() => {
+                    printWindow.print();
+                    printWindow.close();
+                }, 500);
+            }
+        }
+    };
+
 
     return (
         <div className="flex-1 overflow-y-auto p-4 md:p-6" dir="rtl">
             <div className="max-w-4xl mx-auto">
-                 <h1 className="text-2xl font-bold mb-4">مسار اليوم - {today}</h1>
+                 <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-bold">مسار اليوم - {today}</h1>
+                    {todayVisits.length > 0 && (
+                        <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg text-gray-700 bg-gray-200 hover:bg-gray-300">
+                            <Printer size={16} /> طباعة المسار
+                        </button>
+                    )}
+                 </div>
                  {areas.length > 0 ? (
                     <div className="space-y-6">
                         {areas.map(area => (

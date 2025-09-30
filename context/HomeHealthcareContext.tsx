@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useContext, useMemo } from 'react';
-import { AppState, Action, Role, Patient, Staff, Visit, Team, DoctorFollowUpData, NurseFollowUpData, PtFollowUpData, SwFollowUpData } from '../types';
+import { AppState, Action, Role, Patient, Staff, Visit, Team, DoctorFollowUpData, NurseFollowUpData, PtFollowUpData, SwFollowUpData, ContactAttempt, CustomList } from '../types';
 import { processInitialData, getRiskLevel } from '../utils/helpers';
 import { DATA } from '../data';
 
@@ -25,6 +25,7 @@ const initialState: AppState = {
         { id: 'team2', name: 'Team 2', members: [doctorStaff[1], nurseStaff[2], nurseStaff[3]] },
         { id: 'team3', name: 'Team 3', members: [doctorStaff[2], nurseStaff[4], nurseStaff[5]] },
     ],
+    customLists: [],
 };
 
 const reducer = (state: AppState, action: Action): AppState => {
@@ -135,6 +136,65 @@ const reducer = (state: AppState, action: Action): AppState => {
                     return p;
                 }),
             };
+        }
+        case 'LOG_CONTACT_ATTEMPT': {
+            return {
+                ...state,
+                patients: state.patients.map(p => {
+                    if (p.nationalId === action.payload.patientId) {
+                        const newAttempt: ContactAttempt = {
+                            date: new Date().toISOString(),
+                            type: action.payload.type,
+                            staffName: action.payload.staffName,
+                        };
+                        return { ...p, contactAttempts: [newAttempt, ...(p.contactAttempts || [])] };
+                    }
+                    return p;
+                })
+            };
+        }
+        case 'CANCEL_VISIT': {
+            return {
+                ...state,
+                visits: state.visits.filter(v => !(v.patientId === action.payload.patientId && v.date === action.payload.date))
+            };
+        }
+        case 'IMPORT_STATE': {
+            // Basic validation
+            if (action.payload && action.payload.patients && action.payload.filters) {
+                // Re-hydrate the Set for selectedPatientIds from the imported array
+                const rehydratedState = {
+                    ...initialState, // Start with a clean slate
+                    ...action.payload,
+                    selectedPatientIds: new Set(action.payload.selectedPatientIds || []),
+                };
+                return rehydratedState;
+            }
+            return state; // Or show an error
+        }
+        case 'CREATE_CUSTOM_LIST': {
+            if (state.selectedPatientIds.size === 0 || !action.payload.name) {
+                return state;
+            }
+            const newList: CustomList = {
+                id: Date.now().toString(),
+                name: action.payload.name,
+                patientIds: Array.from(state.selectedPatientIds),
+            };
+            return { ...state, customLists: [...state.customLists, newList] };
+        }
+        case 'DELETE_CUSTOM_LIST': {
+            return {
+                ...state,
+                customLists: state.customLists.filter(list => list.id !== action.payload.id),
+            };
+        }
+        case 'APPLY_CUSTOM_LIST': {
+            const list = state.customLists.find(l => l.id === action.payload.id);
+            if (list) {
+                return { ...state, selectedPatientIds: new Set(list.patientIds) };
+            }
+            return state;
         }
         default:
             return state;

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Patient, Assessment, Role, DoctorAssessmentData, NurseAssessmentData, PtAssessmentData, SwAssessmentData } from '../types';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
 import { getRiskLevel, riskLevelToColor, getInitials } from '../utils/helpers';
-import { Phone, MapPin, Hash, QrCode, ClipboardList, Stethoscope, HandHeart, Accessibility, HeartPulse } from 'lucide-react';
+import { Phone, MapPin, Hash, QrCode, ClipboardList, Stethoscope, HandHeart, Accessibility, HeartPulse, PhoneOff, DoorClosed } from 'lucide-react';
 import DoctorAssessmentForm from './forms/doctor/DoctorAssessmentForm';
 import NurseAssessmentForm from './forms/nurse/NurseAssessmentForm';
 import PtAssessmentForm from './forms/pt/PtAssessmentForm';
@@ -40,6 +40,11 @@ const PatientCard: React.FC<{ patient: Patient }> = ({ patient }) => {
         dispatch({ type: 'SAVE_ASSESSMENT', payload: { patientId: patient.nationalId, assessment } });
         setEditing(null);
     };
+
+    const handleLogContact = (type: 'No Answer' | 'Door Not Opened') => {
+        const currentUser = state.staff.find(s => s.الاسم.includes('')) || { الاسم: 'System' }; // Simplified user finding
+        dispatch({ type: 'LOG_CONTACT_ATTEMPT', payload: { patientId: patient.nationalId, type, staffName: currentUser.الاسم } });
+    }
 
     const isClinicalRole = [Role.Doctor, Role.Nurse, Role.PhysicalTherapist, Role.SocialWorker].includes(state.currentRole);
 
@@ -113,7 +118,15 @@ const PatientCard: React.FC<{ patient: Patient }> = ({ patient }) => {
                             <p className="text-xs text-gray-500">{patient.sex}</p>
                         </div>
                     </div>
-                    <input type="checkbox" checked={isSelected} onChange={handleSelect} className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                     <div className="flex items-center gap-2">
+                        {patient.contactAttempts && patient.contactAttempts.length > 0 && (
+                            <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1" title={`${patient.contactAttempts.length} failed contact attempts`}>
+                                <PhoneOff size={12} />
+                                {patient.contactAttempts.length}
+                            </span>
+                        )}
+                        <input type="checkbox" checked={isSelected} onChange={handleSelect} className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                    </div>
                 </div>
                 
                 <div className="mt-4 space-y-2 text-sm text-gray-600">
@@ -144,7 +157,13 @@ const PatientCard: React.FC<{ patient: Patient }> = ({ patient }) => {
                      <div className={`w-2 h-2 rounded-full ${risk.level === 'red' ? 'bg-red-500' : risk.level === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
                      {risk.label}
                  </div>
-                 <div className="flex items-center gap-2">
+                 <div className="flex items-center gap-1">
+                     <button onClick={() => handleLogContact('No Answer')} title="Log 'No Answer'" className="p-1.5 rounded-full hover:bg-yellow-100 text-gray-500 hover:text-yellow-600 transition-colors">
+                        <PhoneOff size={16}/>
+                    </button>
+                    <button onClick={() => handleLogContact('Door Not Opened')} title="Log 'Door Not Opened'" className="p-1.5 rounded-full hover:bg-orange-100 text-gray-500 hover:text-orange-600 transition-colors">
+                        <DoorClosed size={16}/>
+                    </button>
                      <button onClick={() => setEditing(state.currentRole)} disabled={!isClinicalRole} title="Add Assessment" className="p-1.5 rounded-full hover:bg-gray-200 text-gray-500 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                         <ClipboardList size={16}/>
                      </button>

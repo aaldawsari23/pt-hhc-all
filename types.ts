@@ -179,6 +179,11 @@ export interface SwAssessmentData extends BaseAssessment {
 
 export type Assessment = DoctorAssessmentData | NurseAssessmentData | PtAssessmentData | SwAssessmentData;
 
+export interface ContactAttempt {
+    date: string;
+    type: 'No Answer' | 'Door Not Opened';
+    staffName: string;
+}
 
 export interface Patient {
   nationalId: string;
@@ -202,6 +207,7 @@ export interface Patient {
   sex?: 'Male' | 'Female';
   tags: string[];
   assessments: Assessment[];
+  contactAttempts: ContactAttempt[];
 }
 
 export interface Team {
@@ -234,6 +240,12 @@ export interface Visit {
     status: 'Scheduled' | 'DoctorCompleted' | 'NurseCompleted' | 'Completed';
 }
 
+export interface CustomList {
+  id: string;
+  name: string;
+  patientIds: string[];
+}
+
 export interface AppState {
     patients: Patient[];
     staff: Staff[];
@@ -257,6 +269,7 @@ export interface AppState {
     currentRole: Role;
     visits: Visit[];
     teams: Team[];
+    customLists: CustomList[];
 }
 
 export type Action =
@@ -272,4 +285,10 @@ export type Action =
     | { type: 'SET_ROLE'; payload: Role }
     | { type: 'ASSIGN_TO_VISITS'; payload: { patientIds: string[], date: string, teamId: string } }
     | { type: 'SAVE_VISIT_NOTE'; payload: { visitId: string, role: Role, note: DoctorFollowUpData | NurseFollowUpData | PtFollowUpData | SwFollowUpData, user: string } }
-    | { type: 'SAVE_ASSESSMENT'; payload: { patientId: string; assessment: Assessment } };
+    | { type: 'SAVE_ASSESSMENT'; payload: { patientId: string; assessment: Assessment } }
+    | { type: 'LOG_CONTACT_ATTEMPT'; payload: { patientId: string; type: 'No Answer' | 'Door Not Opened'; staffName: string } }
+    | { type: 'CANCEL_VISIT'; payload: { patientId: string; date: string } }
+    | { type: 'IMPORT_STATE'; payload: AppState }
+    | { type: 'CREATE_CUSTOM_LIST'; payload: { name: string } }
+    | { type: 'DELETE_CUSTOM_LIST'; payload: { id: string } }
+    | { type: 'APPLY_CUSTOM_LIST'; payload: { id: string } };

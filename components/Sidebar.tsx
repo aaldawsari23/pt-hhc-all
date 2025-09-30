@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, X, Filter, Tag, Users, MapPin, BarChart2, Check, UserPlus } from 'lucide-react';
+import { Search, X, Filter, Tag, Users, MapPin, BarChart2, Check, UserPlus, Save, Trash2, List } from 'lucide-react';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
 
 const FilterChip: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
@@ -55,6 +55,54 @@ const BulkActions: React.FC = () => {
     );
 }
 
+const CustomLists: React.FC = () => {
+    const { state, dispatch } = useHomeHealthcare();
+    const [newListName, setNewListName] = useState('');
+    const hasSelection = state.selectedPatientIds.size > 0;
+
+    const handleCreateList = () => {
+        if (newListName.trim() && hasSelection) {
+            dispatch({ type: 'CREATE_CUSTOM_LIST', payload: { name: newListName.trim() } });
+            setNewListName('');
+        }
+    };
+
+    return (
+        <div className="p-4 border-t border-gray-200">
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <List size={16} /> Custom Lists
+            </h3>
+            {hasSelection && (
+                <div className="flex gap-2 mb-3">
+                    <input 
+                        type="text"
+                        value={newListName}
+                        onChange={e => setNewListName(e.target.value)}
+                        placeholder="New list name..."
+                        className="w-full bg-white border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                    />
+                    <button onClick={handleCreateList} className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50" disabled={!newListName.trim()}>
+                        <Save size={16} />
+                    </button>
+                </div>
+            )}
+             <div className="flex flex-wrap gap-2">
+                {state.customLists.map(list => (
+                    <div key={list.id} className="group flex items-center bg-gray-200 rounded-full text-xs">
+                        <button onClick={() => dispatch({ type: 'APPLY_CUSTOM_LIST', payload: { id: list.id }})} className="px-3 py-1 hover:bg-gray-300 rounded-l-full">
+                            {list.name} <span className="text-gray-500">({list.patientIds.length})</span>
+                        </button>
+                         <button onClick={() => dispatch({ type: 'DELETE_CUSTOM_LIST', payload: { id: list.id }})} className="px-2 py-1 text-gray-500 hover:bg-red-200 hover:text-red-600 rounded-r-full">
+                            <Trash2 size={12} />
+                        </button>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+
 const Sidebar: React.FC = () => {
     const { state, dispatch, filteredPatients } = useHomeHealthcare();
     const { filters, areas, selectedPatientIds } = state;
@@ -69,6 +117,41 @@ const Sidebar: React.FC = () => {
         const filteredIds = filteredPatients.map(p => p.nationalId);
         dispatch({type: 'SELECT_ALL_FILTERED', payload: filteredIds});
     }
+    
+    const handleExport = () => {
+        const stateToExport = {
+            ...state,
+            selectedPatientIds: Array.from(state.selectedPatientIds),
+            customLists: state.customLists,
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(stateToExport, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `hhc_export_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedState = JSON.parse(e.target?.result as string);
+                    dispatch({ type: 'IMPORT_STATE', payload: importedState });
+                    alert('Data imported successfully!');
+                } catch (error) {
+                    console.error("Failed to import data:", error);
+                    alert('Failed to import data. The file might be corrupted.');
+                }
+            };
+            reader.readAsText(file);
+        }
+        event.target.value = ''; // Reset file input
+    };
+
 
     return (
         <aside className="w-80 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 h-full overflow-y-hidden">
@@ -126,9 +209,23 @@ const Sidebar: React.FC = () => {
                         ))}
                     </FilterSection>
                 </div>
+                 <CustomLists />
             </div>
             
             <BulkActions />
+            
+            <div className="p-4 border-t border-gray-200 bg-gray-50">
+                <h3 className="text-sm font-bold text-gray-700 mb-3">Data Management</h3>
+                <div className="space-y-2">
+                    <button onClick={handleExport} className="w-full bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors text-sm">
+                        Export Data
+                    </button>
+                    <input type="file" id="import-file" accept=".json" onChange={handleImport} className="hidden" />
+                    <label htmlFor="import-file" className="w-full block text-center bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer text-sm">
+                        Import Data
+                    </label>
+                </div>
+            </div>
         </aside>
     );
 };

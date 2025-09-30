@@ -10,6 +10,8 @@ import NurseFollowUpForm from './forms/nurse/NurseFollowUpForm';
 import PtFollowUpForm from './forms/pt/PtFollowUpForm';
 import SwFollowUpForm from './forms/sw/SwFollowUpForm';
 import VisitPrintView from './VisitPrintView';
+import PtPrintView from './PtPrintView';
+import SwPrintView from './SwPrintView';
 
 const StructuredNoteDisplay: React.FC<{ visit: Visit }> = ({ visit }) => {
     return (
@@ -108,33 +110,32 @@ const VisitCard: React.FC<{ visit: Visit, patient: Patient | undefined }> = ({ v
     }
 
     const handleSaveNote = (note: DoctorFollowUpData | NurseFollowUpData | PtFollowUpData | SwFollowUpData) => {
-        const currentUser = state.staff.find(s => s.الاسم.includes('')); // Simplified user finding
+        const currentUser = state.staff.find(s => s.الاسم.includes('')) || { الاسم: myRole }; // Simplified user finding
         dispatch({
             type: 'SAVE_VISIT_NOTE',
             payload: {
                 visitId: `${visit.patientId}_${visit.date}`,
                 role: myRole,
                 note: note,
-                user: currentUser?.الاسم || myRole,
+                user: currentUser.الاسم,
             }
         });
         setIsEditing(false);
     };
 
-    const handlePrint = () => {
+    const handlePrint = (printView: React.ReactElement) => {
         const printWindow = window.open('', '_blank');
         if (printWindow) {
             printWindow.document.write('<html><head><title>Visit Note</title><script src="https://cdn.tailwindcss.com"></script></head><body><div id="print-root"></div></body></html>');
             printWindow.document.close();
             const printRoot = printWindow.document.getElementById('print-root');
             if (printRoot) {
-                // FIX: Use createRoot().render() instead of the deprecated ReactDOM.render().
                 const root = createRoot(printRoot);
-                root.render(<VisitPrintView visit={visit} patient={patient} />);
+                root.render(printView);
                 setTimeout(() => {
                     printWindow.print();
                     printWindow.close();
-                }, 500);
+                }, 500); // Allow time for render
             }
         }
     };
@@ -170,7 +171,9 @@ const VisitCard: React.FC<{ visit: Visit, patient: Patient | undefined }> = ({ v
             )}
             
             <div className="border-t pt-3 flex justify-end items-center gap-2">
-                {visit.status === 'Completed' && <button onClick={handlePrint} className="text-xs px-3 py-1 rounded-md text-gray-600 bg-gray-100 hover:bg-gray-200 flex items-center gap-1"><Printer size={14} /> Print</button>}
+                {visit.status === 'Completed' && <button onClick={() => handlePrint(<VisitPrintView visit={visit} patient={patient} />)} className="text-xs px-3 py-1 rounded-md text-gray-600 bg-gray-100 hover:bg-gray-200 flex items-center gap-1"><Printer size={14} /> Print DN/RN</button>}
+                 {visit.ptNote && <button onClick={() => handlePrint(<PtPrintView visit={visit} patient={patient} />)} className="text-xs px-3 py-1 rounded-md text-gray-600 bg-gray-100 hover:bg-gray-200 flex items-center gap-1"><Printer size={14} /> Print PT</button>}
+                 {visit.swNote && <button onClick={() => handlePrint(<SwPrintView visit={visit} patient={patient} />)} className="text-xs px-3 py-1 rounded-md text-gray-600 bg-gray-100 hover:bg-gray-200 flex items-center gap-1"><Printer size={14} /> Print SW</button>}
                 {Editor && !isEditing && (
                     <button onClick={() => setIsEditing(true)} className="text-xs px-3 py-1 rounded-md text-blue-600 bg-blue-50 hover:bg-blue-100 flex items-center gap-1 flex-shrink-0">
                         <Edit3 size={14} /> {noteSaved ? 'Edit Note' : 'Add Note'}

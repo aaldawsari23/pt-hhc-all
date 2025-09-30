@@ -25,7 +25,7 @@ const radioBase = "px-2 py-1 text-xs rounded-full border transition-colors";
 const radioActive = "bg-blue-600 text-white font-semibold border-blue-600";
 const radioInactive = "bg-white text-gray-700 hover:border-blue-400";
 
-// FIX: Changed onChange prop type to (v: T) => void as the component only ever passes the value, not a state setter function.
+// FIX: Changed onChange prop type to (v: T) => void to correctly use the generic type.
 // This resolves a cascade of type errors in forms that use this component.
 export const RadioGroup = <T extends string>({ value, onChange, options }: { value: T, onChange: (v: T) => void, options: readonly T[] }) => (
     <div className="flex gap-2 flex-wrap">

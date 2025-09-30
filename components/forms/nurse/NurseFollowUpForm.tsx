@@ -44,7 +44,8 @@ const NurseFollowUpForm: React.FC<Props> = ({ initialData, onSave, onCancel }) =
                     <CheckboxGroup value={tasks} onChange={handleTaskToggle} options={taskOptions} />
                 </Fieldset>
                  <Fieldset legend="Status">
-                    <RadioGroup value={status} onChange={setStatus} options={['Improved', 'Unchanged', 'Worsened']} />
+                    {/* FIX: Add 'as const' to ensure correct type inference for the generic RadioGroup component. */}
+                    <RadioGroup value={status} onChange={setStatus} options={['Improved', 'Unchanged', 'Worsened'] as const} />
                 </Fieldset>
                 <textarea value={nurseNote} onChange={e => setNurseNote(e.target.value)} rows={2} placeholder="Optional note..." className="w-full p-2 border rounded-md" />
             </div>
