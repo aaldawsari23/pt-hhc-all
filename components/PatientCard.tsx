@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Patient, Assessment, Role, DoctorAssessmentData, NurseAssessmentData, PtAssessmentData, SwAssessmentData } from '../types';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
+import { useFirebase } from '../context/FirebaseContext';
 import { getRiskLevel, riskLevelToColor, getInitials } from '../utils/helpers';
-import { Phone, MapPin, Hash, QrCode, ClipboardList, Stethoscope, HandHeart, Accessibility, HeartPulse, PhoneOff, DoorClosed } from 'lucide-react';
+import { Phone, MapPin, Hash, QrCode, ClipboardList, Stethoscope, HandHeart, Accessibility, HeartPulse, PhoneOff, DoorClosed, FileText, Printer } from 'lucide-react';
+import { NetlifyDbService } from '../utils/netlifyDb';
 import DoctorAssessmentForm from './forms/doctor/DoctorAssessmentForm';
 import NurseAssessmentForm from './forms/nurse/NurseAssessmentForm';
 import PtAssessmentForm from './forms/pt/PtAssessmentForm';
@@ -11,15 +13,15 @@ import SwAssessmentForm from './forms/sw/SwAssessmentForm';
 
 const Tag: React.FC<{ label: string }> = ({ label }) => {
     const colorMap: { [key: string]: string } = {
-        'Catheter': 'bg-blue-100 text-blue-800',
-        'Pressure Ulcer': 'bg-red-100 text-red-800',
-        'Tube Feeding': 'bg-yellow-100 text-yellow-800',
-        'Fall Risk': 'bg-purple-100 text-purple-800',
-        'IV Therapy': 'bg-indigo-100 text-indigo-800',
-        'Ventilation': 'bg-pink-100 text-pink-800',
+        'Catheter': 'bg-blue-500 text-white shadow-sm',
+        'Pressure Ulcer': 'bg-red-500 text-white shadow-sm',
+        'Tube Feeding': 'bg-amber-500 text-white shadow-sm',
+        'Fall Risk': 'bg-purple-500 text-white shadow-sm',
+        'IV Therapy': 'bg-indigo-500 text-white shadow-sm',
+        'Ventilation': 'bg-pink-500 text-white shadow-sm',
     };
     return (
-        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${colorMap[label] || 'bg-gray-100 text-gray-800'}`}>
+        <span className={`px-2.5 py-1 text-xs font-bold rounded-full border-2 border-white/50 ${colorMap[label] || 'bg-gray-500 text-white shadow-sm'}`}>
             {label}
         </span>
     );
@@ -27,7 +29,9 @@ const Tag: React.FC<{ label: string }> = ({ label }) => {
 
 const PatientCard: React.FC<{ patient: Patient }> = ({ patient }) => {
     const { state, dispatch } = useHomeHealthcare();
+    const { useNetlifyDb, currentUser } = useFirebase();
     const [editing, setEditing] = useState<Role | null>(null);
+    const [generatingPdf, setGeneratingPdf] = useState(false);
     const isSelected = state.selectedPatientIds.has(patient.nationalId);
     const risk = getRiskLevel(patient.admissionDate);
     const latestAssessment = patient.assessments?.[0];
@@ -65,7 +69,7 @@ const PatientCard: React.FC<{ patient: Patient }> = ({ patient }) => {
 
     if (editing && editing === state.currentRole) {
         return (
-             <div className="bg-white rounded-xl shadow-lg border border-blue-500 ring-2 ring-blue-200 flex flex-col h-[420px]">
+             <div className="bg-white rounded-2xl shadow-2xl border-2 border-blue-500 ring-4 ring-blue-200/50 flex flex-col min-h-[450px] md:min-h-[500px]">
                 {renderAssessmentForm()}
             </div>
         );
@@ -105,34 +109,78 @@ const PatientCard: React.FC<{ patient: Patient }> = ({ patient }) => {
         }
     }
 
+    const handleGeneratePatientCard = async () => {
+        if (!useNetlifyDb) {
+            alert('PDF generation is only available with Netlify DB. Please switch to Netlify DB in Settings.');
+            return;
+        }
+
+        try {
+            setGeneratingPdf(true);
+            const result = await NetlifyDbService.generatePatientCard(
+                patient.nationalId, 
+                currentUser?.name || 'النظام'
+            );
+            
+            if (result.success && result.pdfContent) {
+                // Download the generated PDF
+                const blob = new Blob([result.pdfContent], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = result.filename || `patient_card_${patient.nationalId}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                alert('تم إنشاء بطاقة المريض بنجاح');
+            }
+        } catch (error) {
+            console.error('Error generating patient card:', error);
+            alert('فشل في إنشاء بطاقة المريض');
+        } finally {
+            setGeneratingPdf(false);
+        }
+    };
+
     return (
-        <div className={`bg-white rounded-xl shadow-sm border ${isSelected ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'} transition-all duration-200 flex flex-col`}>
-            <div className="p-4 flex-grow">
-                <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-blue-800 ${riskLevelToColor[risk.level]}`}>
+        <div className={`bg-white rounded-2xl shadow-lg border-2 ${isSelected ? 'border-blue-500 ring-4 ring-blue-200/50 shadow-blue-100' : 'border-gray-100 hover:border-blue-200'} transition-all duration-300 flex flex-col hover:shadow-xl`}>
+            <div className="p-4 md:p-5 flex-grow">
+                <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center font-bold text-sm md:text-base shadow-md ${riskLevelToColor[risk.level]}`}>
                             {getInitials(patient.nameAr)}
                         </div>
-                        <div>
-                            <h3 className="font-bold text-gray-800 text-base leading-tight">{patient.nameAr}</h3>
-                            <p className="text-xs text-gray-500">{patient.sex}</p>
+                        <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-gray-900 text-base md:text-lg leading-tight truncate">{patient.nameAr}</h3>
+                            <p className="text-xs md:text-sm text-gray-500 mt-0.5">{patient.sex}</p>
                         </div>
                     </div>
-                     <div className="flex items-center gap-2">
+                     <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                         {patient.contactAttempts && patient.contactAttempts.length > 0 && (
-                            <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded-full flex items-center gap-1" title={`${patient.contactAttempts.length} failed contact attempts`}>
+                            <span className="bg-orange-500 text-white text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-sm" title={`${patient.contactAttempts.length} failed contact attempts`}>
                                 <PhoneOff size={12} />
                                 {patient.contactAttempts.length}
                             </span>
                         )}
-                        <input type="checkbox" checked={isSelected} onChange={handleSelect} className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+                        <input type="checkbox" checked={isSelected} onChange={handleSelect} className="h-5 w-5 md:h-6 md:w-6 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 cursor-pointer touch-target-44" />
                     </div>
                 </div>
                 
-                <div className="mt-4 space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center gap-2"><Hash size={14} className="text-gray-400" /><span>{patient.nationalId}</span></div>
-                    <div className="flex items-center gap-2"><Phone size={14} className="text-gray-400" /><span>{patient.phone || 'N/A'}</span></div>
-                    <div className="flex items-center gap-2"><MapPin size={14} className="text-gray-400" /><span>{patient.areaId || 'N/A'}</span></div>
+                <div className="space-y-2.5 text-sm md:text-base text-gray-700">
+                    <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-2.5">
+                        <Hash size={16} className="text-blue-500 flex-shrink-0" />
+                        <span className="font-medium">{patient.nationalId}</span>
+                    </div>
+                    <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-2.5">
+                        <Phone size={16} className="text-green-500 flex-shrink-0" />
+                        <span className="font-medium">{patient.phone || 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-2.5">
+                        <MapPin size={16} className="text-purple-500 flex-shrink-0" />
+                        <span className="font-medium">{patient.areaId || 'N/A'}</span>
+                    </div>
                 </div>
 
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -152,24 +200,40 @@ const PatientCard: React.FC<{ patient: Patient }> = ({ patient }) => {
                 </div>
             )}
             
-            <div className="border-t border-gray-200 bg-gray-50/50 px-4 py-3 flex items-center justify-between rounded-b-xl">
-                 <div className={`px-2.5 py-1 text-xs font-bold rounded-full flex items-center gap-2 ${riskLevelToColor[risk.level]}`}>
-                     <div className={`w-2 h-2 rounded-full ${risk.level === 'red' ? 'bg-red-500' : risk.level === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
+            <div className="border-t-2 border-gray-100 bg-gradient-to-r from-gray-50 to-blue-50/30 px-4 md:px-5 py-3 md:py-4 flex items-center justify-between rounded-b-2xl">
+                 <div className={`px-3 py-2 text-xs md:text-sm font-bold rounded-xl flex items-center gap-2 shadow-sm border ${riskLevelToColor[risk.level]}`}>
+                     <div className={`w-2.5 h-2.5 rounded-full animate-pulse ${risk.level === 'red' ? 'bg-red-500' : risk.level === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'}`}></div>
                      {risk.label}
                  </div>
-                 <div className="flex items-center gap-1">
-                     <button onClick={() => handleLogContact('No Answer')} title="Log 'No Answer'" className="p-1.5 rounded-full hover:bg-yellow-100 text-gray-500 hover:text-yellow-600 transition-colors">
+                 <div className="flex items-center gap-1.5">
+                     <button onClick={() => handleLogContact('No Answer')} title="Log 'No Answer'" className="p-2 md:p-2.5 rounded-xl hover:bg-yellow-500 text-gray-600 hover:text-white transition-all duration-200 shadow-sm hover:shadow-md touch-target-44">
                         <PhoneOff size={16}/>
                     </button>
-                    <button onClick={() => handleLogContact('Door Not Opened')} title="Log 'Door Not Opened'" className="p-1.5 rounded-full hover:bg-orange-100 text-gray-500 hover:text-orange-600 transition-colors">
+                    <button onClick={() => handleLogContact('Door Not Opened')} title="Log 'Door Not Opened'" className="p-2 md:p-2.5 rounded-xl hover:bg-orange-500 text-gray-600 hover:text-white transition-all duration-200 shadow-sm hover:shadow-md touch-target-44">
                         <DoorClosed size={16}/>
                     </button>
-                     <button onClick={() => setEditing(state.currentRole)} disabled={!isClinicalRole} title="Add Assessment" className="p-1.5 rounded-full hover:bg-gray-200 text-gray-500 hover:text-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                     <button onClick={() => setEditing(state.currentRole)} disabled={!isClinicalRole} title="Add Assessment" className="p-2 md:p-2.5 rounded-xl hover:bg-blue-500 text-gray-600 hover:text-white transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed touch-target-44">
                         <ClipboardList size={16}/>
                      </button>
-                     <button className="p-1.5 rounded-full hover:bg-gray-200 text-gray-500 hover:text-gray-800 transition-colors">
+                     <button className="p-2 md:p-2.5 rounded-xl hover:bg-purple-500 text-gray-600 hover:text-white transition-all duration-200 shadow-sm hover:shadow-md touch-target-44">
                         <QrCode size={16}/>
                      </button>
+                     {useNetlifyDb && (
+                         <button 
+                             onClick={handleGeneratePatientCard}
+                             disabled={generatingPdf}
+                             title="إنشاء بطاقة المريض PDF" 
+                             className="p-2 md:p-2.5 rounded-xl hover:bg-green-500 text-gray-600 hover:text-white transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 touch-target-44"
+                         >
+                             {generatingPdf ? (
+                                 <div className="animate-spin">
+                                     <FileText size={16} />
+                                 </div>
+                             ) : (
+                                 <Printer size={16} />
+                             )}
+                         </button>
+                     )}
                  </div>
             </div>
         </div>

@@ -3,7 +3,6 @@ import { Patient, Assessment, Role, DoctorAssessmentData } from '../../../types'
 import { useHomeHealthcare } from '../../../context/HomeHealthcareContext';
 import { Save, X } from 'lucide-react';
 import { Accordion, Fieldset, RadioGroup, CheckboxGroup } from '../FormControls';
-import { useToast } from '../../../context/ToastContext';
 
 interface AssessmentFormProps {
     patient: Patient;
@@ -16,7 +15,6 @@ const redFlagOptions = ['Fever ≥38', 'SpO₂ <90', 'Chest pain', 'Active bleed
 
 const DoctorAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCancel }) => {
     const { state } = useHomeHealthcare();
-    const { showToast } = useToast();
     const [formData, setFormData] = useState<Partial<DoctorAssessmentData>>({
         role: Role.Doctor,
         status: 'Unchanged',
@@ -48,19 +46,25 @@ const DoctorAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, 
             ...formData,
         } as DoctorAssessmentData;
         onSave(newAssessment);
-        showToast("Assessment Saved!");
     };
 
     return (
-         <form onSubmit={handleSave} className="p-4 bg-gray-50 flex flex-col h-full">
-            <div className="flex justify-between items-center mb-3">
-                <h4 className="font-bold text-gray-800">Doctor Assessment</h4>
-                <div className="flex gap-1">
-                    <button type="button" onClick={onCancel} title="Cancel" className="p-1.5 rounded-full hover:bg-red-100 text-red-500"><X size={16} /></button>
-                    <button type="submit" title="Save" className="p-1.5 rounded-full hover:bg-green-100 text-green-600"><Save size={16} /></button>
+         <form onSubmit={handleSave} className="p-4 md:p-6 bg-gradient-to-br from-blue-50 to-white flex flex-col h-full">
+            <div className="flex justify-between items-center mb-4 md:mb-6 pb-3 border-b-2 border-blue-200">
+                <div>
+                    <h4 className="font-bold text-lg md:text-xl text-blue-900">Doctor Assessment</h4>
+                    <p className="text-sm text-gray-600 mt-1">{patient.nameAr}</p>
+                </div>
+                <div className="flex gap-2">
+                    <button type="button" onClick={onCancel} title="Cancel" className="p-2.5 md:p-3 rounded-xl hover:bg-red-500 bg-red-100 text-red-600 hover:text-white transition-all duration-200 shadow-md touch-target-44">
+                        <X size={18} />
+                    </button>
+                    <button type="submit" title="Save Assessment" className="p-2.5 md:p-3 rounded-xl hover:bg-green-600 bg-green-500 text-white hover:shadow-lg transition-all duration-200 shadow-md touch-target-44">
+                        <Save size={18} />
+                    </button>
                 </div>
             </div>
-            <div className="space-y-2 overflow-y-auto flex-grow pr-1 text-sm">
+            <div className="space-y-4 md:space-y-5 overflow-y-auto flex-grow pr-1 text-sm md:text-base">
                 <Accordion title="Chief Focus & Red Flags" defaultOpen={true}>
                     <Fieldset legend="Chief Focus">
                          <CheckboxGroup 
@@ -93,7 +97,23 @@ const DoctorAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, 
                         />
                     </Fieldset>
                 </Accordion>
-                <textarea value={formData.mdNote || ''} onChange={e => setFormData(p => ({...p, mdNote: e.target.value}))} rows={2} placeholder="Optional MD note (max 80 chars)" maxLength={80} className="w-full p-2 text-sm border rounded-md" />
+                <div className="bg-white rounded-xl border-2 border-gray-200 p-4 shadow-sm">
+                    <label className="font-bold text-sm md:text-base text-blue-800 mb-2 block flex items-center">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                        MD Note (Optional)
+                    </label>
+                    <textarea 
+                        value={formData.mdNote || ''} 
+                        onChange={e => setFormData(p => ({...p, mdNote: e.target.value}))} 
+                        rows={3} 
+                        placeholder="Brief clinical note (max 80 characters)" 
+                        maxLength={80} 
+                        className="w-full p-3 text-sm md:text-base border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-200 transition-all duration-200 resize-none"
+                    />
+                    <div className="text-xs text-gray-500 mt-1 text-right">
+                        {(formData.mdNote || '').length}/80 characters
+                    </div>
+                </div>
             </div>
         </form>
     );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Briefcase, Calendar, Users, Stethoscope, Car, HandHeart, UserCog, HeartPulse, Accessibility } from 'lucide-react';
+import { Briefcase, Calendar, Users, Stethoscope, Car, HandHeart, UserCog, HeartPulse, Accessibility, Settings } from 'lucide-react';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
 import { Role } from '../types';
 
@@ -11,35 +11,36 @@ interface HeaderProps {
 const RoleButton: React.FC<{ role: Role, currentRole: Role, onClick: (role: Role) => void, icon: React.ReactNode }> = ({ role, currentRole, onClick, icon }) => (
     <button
         onClick={() => onClick(role)}
-        className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${
+        className={`flex items-center gap-1.5 px-2 md:px-3 py-1.5 text-xs md:text-sm rounded-lg font-medium transition-all duration-200 touch-target-44 ${
             currentRole === role
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-white text-gray-600 hover:bg-blue-50'
+                ? 'bg-white text-blue-700 shadow-md scale-105'
+                : 'bg-white/20 text-white hover:bg-white/30 backdrop-blur-sm'
         }`}
     >
-        {icon}
-        <span className="hidden sm:inline">{role}</span>
+        <span className="flex-shrink-0">{icon}</span>
+        <span className="hidden sm:inline truncate">{role}</span>
     </button>
 );
 
 
 const ViewSwitcher: React.FC<HeaderProps> = ({ activeView, setActiveView }) => {
     const views = [
-        { id: 'patients', label: 'Patients', icon: <Users size={18} /> },
-        { id: 'visits', label: 'Today\'s Visits', icon: <Briefcase size={18} /> },
-        { id: 'scheduler', label: 'Scheduler', icon: <Calendar size={18} /> },
+        { id: 'patients', label: 'Patients', icon: <Users size={16} /> },
+        { id: 'visits', label: 'Today\'s Visits', icon: <Briefcase size={16} /> },
+        { id: 'scheduler', label: 'Scheduler', icon: <Calendar size={16} /> },
+        { id: 'settings', label: 'Settings', icon: <Settings size={16} /> },
     ];
 
     return (
-        <div className="flex items-center bg-white rounded-lg p-1 shadow-inner">
+        <div className="flex items-center bg-white/90 backdrop-blur-sm rounded-xl p-1 shadow-lg border border-white/20">
             {views.map(view => (
                  <button
                     key={view.id}
                     onClick={() => setActiveView(view.id)}
-                    className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded-md transition-colors duration-200 ${
+                    className={`flex items-center gap-1.5 px-2 md:px-4 py-2 text-xs md:text-sm rounded-lg font-medium transition-all duration-200 touch-target-44 ${
                         activeView === view.id
-                            ? 'bg-blue-100 text-blue-700 font-semibold'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'bg-blue-600 text-white shadow-md'
+                            : 'text-blue-700 hover:bg-blue-50'
                     }`}
                 >
                     {view.icon}
@@ -68,20 +69,24 @@ const Header: React.FC<HeaderProps> = ({ activeView, setActiveView }) => {
     ];
 
     return (
-        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 p-3 flex flex-col md:flex-row items-center justify-between gap-4 sticky top-0 z-10">
-            <div className="flex items-center gap-3">
-                 <img src="https://i.imgur.com/8Q9Z3v1.png" alt="Logo" className="h-10 w-10 object-contain" />
-                <div>
-                     <h1 className="text-xl font-bold text-gray-800">Home Healthcare</h1>
-                     <p className="text-xs text-gray-500">مستشفى الملك عبدالله - بيشه</p>
+        <header className="bg-gradient-to-r from-blue-700 to-blue-600 border-b border-blue-800 p-3 md:p-4 flex flex-col lg:flex-row items-center justify-between gap-3 md:gap-4 sticky top-0 z-50 shadow-lg">
+            <div className="flex items-center gap-2 md:gap-3 w-full lg:w-auto justify-center lg:justify-start">
+                 <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-md">
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                        <span className="text-white font-bold text-sm md:text-base">KA</span>
+                    </div>
+                 </div>
+                <div className="text-center lg:text-left">
+                     <h1 className="text-lg md:text-xl font-bold text-white leading-tight">Home Healthcare</h1>
+                     <p className="text-xs md:text-sm text-blue-100">مستشفى الملك عبدالله - بيشه</p>
                 </div>
             </div>
             
-            <div className="flex-grow flex items-center justify-center">
+            <div className="flex-grow flex items-center justify-center w-full lg:w-auto order-3 lg:order-2">
                  {state.currentRole !== Role.Driver && <ViewSwitcher activeView={activeView} setActiveView={setActiveView} />}
             </div>
 
-            <div className="flex items-center gap-1 p-1 bg-gray-200/50 rounded-lg overflow-x-auto">
+            <div className="flex items-center gap-1 p-1 bg-white/10 rounded-lg overflow-x-auto w-full lg:w-auto justify-center lg:justify-end order-2 lg:order-3">
                {roles.map(r => (
                  <RoleButton key={r.role} role={r.role} currentRole={state.currentRole} onClick={handleRoleChange} icon={r.icon} />
                ))}

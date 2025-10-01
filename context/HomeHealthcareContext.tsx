@@ -159,21 +159,18 @@ const reducer = (state: AppState, action: Action): AppState => {
                 visits: state.visits.filter(v => !(v.patientId === action.payload.patientId && v.date === action.payload.date))
             };
         }
-       case 'IMPORT_STATE': {
+        case 'IMPORT_STATE': {
+            // Basic validation
             if (action.payload && action.payload.patients && action.payload.filters) {
-                const importedData = action.payload;
-                // Re-hydrate Sets and other non-serializable data structures
+                // Re-hydrate the Set for selectedPatientIds from the imported array
                 const rehydratedState = {
-                    ...initialState, // Start with a clean base
-                    ...importedData,
-                    patients: importedData.patients || initialState.patients,
-                    visits: importedData.visits || initialState.visits,
-                    customLists: importedData.customLists || initialState.customLists,
-                    selectedPatientIds: new Set(Array.isArray(importedData.selectedPatientIds) ? importedData.selectedPatientIds : []),
+                    ...initialState, // Start with a clean slate
+                    ...action.payload,
+                    selectedPatientIds: new Set(action.payload.selectedPatientIds || []),
                 };
                 return rehydratedState;
             }
-            return state;
+            return state; // Or show an error
         }
         case 'CREATE_CUSTOM_LIST': {
             if (state.selectedPatientIds.size === 0 || !action.payload.name) {
@@ -183,7 +180,6 @@ const reducer = (state: AppState, action: Action): AppState => {
                 id: Date.now().toString(),
                 name: action.payload.name,
                 patientIds: Array.from(state.selectedPatientIds),
-                createdAt: new Date().toISOString(),
             };
             return { ...state, customLists: [...state.customLists, newList] };
         }

@@ -11,7 +11,7 @@ const PrintField: React.FC<{ label: string; value?: string | string[] | null | o
   
   let displayValue;
   if (typeof value === 'object' && !Array.isArray(value)) {
-    displayValue = Object.values(value).join(', ');
+    displayValue = Object.entries(value).map(([k, v]) => v).join(', ');
   } else {
     displayValue = Array.isArray(value) ? value.join(', ') : value;
   }
@@ -26,7 +26,7 @@ const SwPrintView: React.FC<Props> = ({ visit, patient }) => {
   const swAssessment = patient.assessments.find(a => a.role === Role.SocialWorker) as SwAssessmentData | undefined;
 
   return (
-    <div className="p-8 font-sans text-sm" style={{ width: '210mm', minHeight: '297mm' }} dir="rtl">
+    <div className="p-8 font-sans text-sm" style={{ width: '210mm', height: '297mm' }} dir="rtl">
       {/* Header */}
       <header className="flex items-center justify-between pb-4 border-b">
          <div>
@@ -34,7 +34,7 @@ const SwPrintView: React.FC<Props> = ({ visit, patient }) => {
             <p className="text-lg text-gray-600">مستشفى الملك عبدالله - بيشه</p>
           </div>
         <div className="text-right text-xs text-gray-500">
-          <p><strong>التاريخ:</strong> {new Date(visit.date || swAssessment?.date || Date.now()).toLocaleDateString()}</p>
+          <p><strong>التاريخ:</strong> {new Date(visit.date).toLocaleDateString()}</p>
         </div>
       </header>
 
@@ -52,16 +52,11 @@ const SwPrintView: React.FC<Props> = ({ visit, patient }) => {
             <section>
                  <h2 className="text-base font-bold text-gray-700 mb-2 underline">ملخص التقييم الاجتماعي</h2>
                  <div className="space-y-1">
-                    <PrintField label="السكن والرعاية" value={`${swAssessment.residence}, مساعدة: ${swAssessment.adlAssistance}`} />
-                    <PrintField label="الدعم الاجتماعي" value={swAssessment.socialSupport} />
-                    <PrintField label="الحالة النفسية والإدراكية" value={swAssessment.mentalCognitive} />
+                    <PrintField label="السكن والرعاية" value={swAssessment.residence} />
                     <PrintField label="الوضع الاقتصادي" value={swAssessment.economic} />
                     <PrintField label="سلامة المنزل" value={swAssessment.homeSafety?.risks} />
-                     <PrintField label="أدوات مساعدة بالمنزل" value={swAssessment.homeSafety?.aids} />
                     <PrintField label="الاحتياجات" value={swAssessment.needs} />
                     <PrintField label="الفحص النفسي" value={swAssessment.psychosocial} />
-                    <PrintField label="أهداف الرعاية" value={swAssessment.goalsOfCare} />
-                    <PrintField label="معوقات الرعاية" value={swAssessment.barriersToCare} />
                     <PrintField label="الإجراءات" value={swAssessment.actions} />
                  </div>
             </section>

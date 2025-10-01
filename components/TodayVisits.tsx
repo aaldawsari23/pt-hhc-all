@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// FIX: Use createRoot from react-dom/client for React 18+ compatibility.
 import { createRoot } from 'react-dom/client';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
 import { Patient, Role, Visit, DoctorFollowUpData, NurseFollowUpData, PtFollowUpData, SwFollowUpData } from '../types';
@@ -11,37 +12,91 @@ import SwFollowUpForm from './forms/sw/SwFollowUpForm';
 import VisitPrintView from './VisitPrintView';
 import PtPrintView from './PtPrintView';
 import SwPrintView from './SwPrintView';
-import { useToast } from '../context/ToastContext';
 
 const StructuredNoteDisplay: React.FC<{ visit: Visit }> = ({ visit }) => {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm md:text-base">
             {/* Doctor Note */}
-            <div className="space-y-2">
-                <h4 className="font-bold text-gray-600 flex items-center gap-1"><Stethoscope size={14}/> Doctor's Note</h4>
+            <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
+                <h4 className="font-bold text-blue-800 flex items-center gap-2 mb-3">
+                    <Stethoscope size={16}/> Doctor's Assessment
+                </h4>
                 {visit.doctorNote ? (
-                    <div className="pl-2 border-l-2 border-blue-200 space-y-1 text-gray-700">
-                        <p><strong>Status:</strong> {visit.doctorNote.status}</p>
-                        <p><strong>Response:</strong> {visit.doctorNote.responseToPlan}</p>
-                        <p><strong>Plan:</strong> {visit.doctorNote.plan} {visit.doctorNote.planDetails ? `(${visit.doctorNote.planDetails.join(', ')})`: ''}</p>
-                        {visit.doctorNote.mdNote && <p className="italic">"{visit.doctorNote.mdNote}"</p>}
+                    <div className="space-y-2 text-gray-700">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span><strong>Status:</strong> {visit.doctorNote.status}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span><strong>Response:</strong> {visit.doctorNote.responseToPlan}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <span><strong>Plan:</strong> {visit.doctorNote.plan} {visit.doctorNote.planDetails ? `(${visit.doctorNote.planDetails.join(', ')})`: ''}</span>
+                        </div>
+                        {visit.doctorNote.mdNote && (
+                            <div className="bg-white rounded-lg p-3 border-l-4 border-blue-500">
+                                <p className="italic text-blue-700">"{visit.doctorNote.mdNote}"</p>
+                            </div>
+                        )}
                     </div>
-                ) : <p className="italic text-gray-400">Pending</p>}
-                 {visit.doctorSign && <p className="text-gray-400 text-[10px] pt-1">Signed by: {visit.doctorSign}</p>}
+                ) : (
+                    <div className="text-center py-4">
+                        <Clock size={24} className="text-gray-400 mx-auto mb-2" />
+                        <p className="italic text-gray-500">Pending Assessment</p>
+                    </div>
+                )}
+                 {visit.doctorSign && (
+                    <div className="mt-3 pt-2 border-t border-blue-200">
+                        <p className="text-blue-600 text-sm font-medium">✓ Signed by: {visit.doctorSign}</p>
+                    </div>
+                )}
             </div>
 
             {/* Nurse Note */}
-            <div className="space-y-2">
-                <h4 className="font-bold text-gray-600 flex items-center gap-1"><HandHeart size={14}/> Nurse's Note</h4>
+            <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
+                <h4 className="font-bold text-green-800 flex items-center gap-2 mb-3">
+                    <HandHeart size={16}/> Nursing Care
+                </h4>
                 {visit.nurseNote ? (
-                     <div className="pl-2 border-l-2 border-green-200 space-y-1 text-gray-700">
-                        <p><strong>Status:</strong> {visit.nurseNote.status}</p>
-                        {visit.nurseNote.vitals && <p><strong>Vitals:</strong> T: {visit.nurseNote.vitals.temp}, SpO2: {visit.nurseNote.vitals.o2sat}</p>}
-                        <p><strong>Tasks:</strong> {visit.nurseNote.tasks.join(', ')}</p>
-                        {visit.nurseNote.nurseNote && <p className="italic">"{visit.nurseNote.nurseNote}"</p>}
+                    <div className="space-y-2 text-gray-700">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span><strong>Status:</strong> {visit.nurseNote.status}</span>
+                        </div>
+                        {visit.nurseNote.vitals && (
+                            <div className="bg-white rounded-lg p-3 border-l-4 border-green-500">
+                                <p><strong>Vitals:</strong></p>
+                                <div className="grid grid-cols-2 gap-2 mt-1 text-sm">
+                                    {visit.nurseNote.vitals.temp && <span>T: {visit.nurseNote.vitals.temp}°C</span>}
+                                    {visit.nurseNote.vitals.o2sat && <span>SpO₂: {visit.nurseNote.vitals.o2sat}%</span>}
+                                    {visit.nurseNote.vitals.bp && <span>BP: {visit.nurseNote.vitals.bp}</span>}
+                                    {visit.nurseNote.vitals.hr && <span>HR: {visit.nurseNote.vitals.hr}</span>}
+                                </div>
+                            </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span><strong>Tasks:</strong> {visit.nurseNote.tasks.join(', ')}</span>
+                        </div>
+                        {visit.nurseNote.nurseNote && (
+                            <div className="bg-white rounded-lg p-3 border-l-4 border-green-500">
+                                <p className="italic text-green-700">"{visit.nurseNote.nurseNote}"</p>
+                            </div>
+                        )}
                     </div>
-                ) : <p className="italic text-gray-400">Pending</p>}
-                 {visit.nurseSign && <p className="text-gray-400 text-[10px] pt-1">Signed by: {visit.nurseSign}</p>}
+                ) : (
+                    <div className="text-center py-4">
+                        <Clock size={24} className="text-gray-400 mx-auto mb-2" />
+                        <p className="italic text-gray-500">Pending Assessment</p>
+                    </div>
+                )}
+                 {visit.nurseSign && (
+                    <div className="mt-3 pt-2 border-t border-green-200">
+                        <p className="text-green-600 text-sm font-medium">✓ Signed by: {visit.nurseSign}</p>
+                    </div>
+                )}
             </div>
             
             {/* PT Note */}
@@ -63,6 +118,7 @@ const StructuredNoteDisplay: React.FC<{ visit: Visit }> = ({ visit }) => {
                     <h4 className="font-bold text-gray-600 flex items-center gap-1"><Accessibility size={14}/> مذكرة الأخصائي الاجتماعي</h4>
                      <div className="pr-2 border-r-2 border-yellow-200 space-y-1 text-gray-700">
                         <p><strong>الحالة:</strong> {visit.swNote.situationChange}</p>
+                        {/* FIX: The property is named actionsTaken, not actions. */}
                         <p><strong>الإجراء:</strong> {visit.swNote.actionsTaken.join(', ')}</p>
                         {visit.swNote.swNote && <p className="italic">"{visit.swNote.swNote}"</p>}
                     </div>
@@ -78,7 +134,6 @@ const StructuredNoteDisplay: React.FC<{ visit: Visit }> = ({ visit }) => {
 const VisitCard: React.FC<{ visit: Visit, patient: Patient | undefined }> = ({ visit, patient }) => {
     const { state, dispatch } = useHomeHealthcare();
     const [isEditing, setIsEditing] = useState(false);
-    const { showToast } = useToast();
     
     if (!patient) return null;
 
@@ -121,7 +176,6 @@ const VisitCard: React.FC<{ visit: Visit, patient: Patient | undefined }> = ({ v
             }
         });
         setIsEditing(false);
-        showToast('Visit note saved successfully!');
     };
 
     const handlePrint = (printView: React.ReactElement) => {
@@ -199,14 +253,9 @@ const TodayVisits: React.FC = () => {
                 const teamVisits = todayVisits.filter(v => v.teamId === team.id);
                 if(teamVisits.length === 0) return null;
                 
-                const completedCount = teamVisits.filter(v => v.status === 'Completed').length;
-
                 return (
                     <div key={team.id} className="mb-8">
-                        <div className="flex justify-between items-center mb-3 border-b pb-2">
-                             <h2 className="text-lg font-semibold text-gray-700">{team.name}</h2>
-                             <span className="text-sm font-semibold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">{completedCount} of {teamVisits.length} Completed</span>
-                        </div>
+                        <h2 className="text-lg font-semibold text-gray-700 mb-3 border-b pb-2">{team.name}</h2>
                         <div className="space-y-4">
                             {teamVisits.map(visit => (
                                 <VisitCard key={visit.patientId} visit={visit} patient={state.patients.find(p => p.nationalId === visit.patientId)}/>

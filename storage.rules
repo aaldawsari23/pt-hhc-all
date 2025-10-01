@@ -1,0 +1,49 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is authorized
+    function isAuthorizedUser() {
+      return request.auth != null && 
+             request.auth.token.email in [
+               'salshahrani173@moh.gov.sa',
+               'amemahmoud@mog.gov.sa', 
+               'rowa.ali.omer@gmail.com',
+               'aaldawsari23@moh.gov.sa',
+               'atante@moh.gov.sa',
+               'yalbishe@moh.gov.sa',
+               'relbarahamtoshy@moh.gov.sa',
+               'zdalamri@outlook.sa',
+               'handaa@mog.gov.sa',
+               'nalqahtani112@moh.gov.sa',
+               'hamad1234nmnm@moh.gov.sa',
+               'thamralshhrany188@gmail.com',
+               'salsahrani@moh.gov.sa',
+               'fahhadms10@gmail.com',
+               'halmanfi@moh.gov.sa'
+             ];
+    }
+    
+    // PDF files - read/write for authorized users
+    match /pdfs/{allPaths=**} {
+      allow read, write: if isAuthorizedUser() && 
+                            resource.contentType == 'application/pdf';
+    }
+    
+    // Images - read/write for authorized users
+    match /images/{allPaths=**} {
+      allow read, write: if isAuthorizedUser() && 
+                            resource.contentType.matches('image/.*');
+    }
+    
+    // Exports - read/write for authorized users
+    match /exports/{allPaths=**} {
+      allow read, write: if isAuthorizedUser();
+    }
+    
+    // Temporary uploads - read/write for authorized users, auto-delete after 24h
+    match /temp/{allPaths=**} {
+      allow read, write: if isAuthorizedUser() && 
+                            resource.timeCreated > timestamp.date() - duration.value(1, 'd');
+    }
+  }
+}

@@ -3,7 +3,6 @@ import { Patient, Assessment, Role, SwAssessmentData } from '../../../types';
 import { useHomeHealthcare } from '../../../context/HomeHealthcareContext';
 import { Save, X } from 'lucide-react';
 import { Accordion, Fieldset, RadioGroup, CheckboxGroup } from '../FormControls';
-import { useToast } from '../../../context/ToastContext';
 
 interface AssessmentFormProps {
     patient: Patient;
@@ -13,7 +12,6 @@ interface AssessmentFormProps {
 
 const SwAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCancel }) => {
     const { state } = useHomeHealthcare();
-    const { showToast } = useToast();
     const [formData, setFormData] = useState<Partial<SwAssessmentData>>({
         role: Role.SocialWorker,
         status: 'Unchanged',
@@ -25,11 +23,7 @@ const SwAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCa
         homeSafety: { risks: [], aids: [] },
         needs: [],
         psychosocial: { mood: 'سلبي', memory: 'طبيعي', abuseSuspicion: 'لا' },
-        actions: [],
-        socialSupport: { system: 'متوسط', caregiverStress: 'لا يوجد'},
-        mentalCognitive: { mood: 'مستقر', cognition: 'واعي'},
-        goalsOfCare: [],
-        barriersToCare: []
+        actions: []
     });
     
     const handleSave = (e: React.FormEvent) => {
@@ -43,17 +37,6 @@ const SwAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCa
             ...formData
         } as SwAssessmentData;
         onSave(newAssessment);
-        showToast("تم حفظ التقييم الاجتماعي!");
-    };
-
-     const handleMultiSelect = <K extends keyof SwAssessmentData>(field: K, value: SwAssessmentData[K] extends (infer U)[] ? U : never) => {
-        setFormData(prev => {
-            const currentValues = (prev[field] as any[] || []) as any[];
-            const newValues = currentValues.includes(value)
-                ? currentValues.filter(v => v !== value)
-                : [...currentValues, value];
-            return { ...prev, [field]: newValues };
-        });
     };
 
     return (
@@ -71,28 +54,9 @@ const SwAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCa
                         <RadioGroup value={formData.residence!} onChange={(val) => setFormData(p => ({...p, residence: val}))} options={['يعيش بمفرده', 'مع الأسرة', 'مع مُعيل']} />
                     </Fieldset>
                 </Accordion>
-                 <Accordion title="الدعم الاجتماعي">
-                    <Fieldset legend="نظام الدعم">
-                        <RadioGroup value={formData.socialSupport?.system!} onChange={(val) => setFormData(p => ({...p, socialSupport: {...p.socialSupport!, system: val}}))} options={['قوي', 'متوسط', 'ضعيف']} />
-                    </Fieldset>
-                     <Fieldset legend="إرهاق مقدم الرعاية">
-                        <RadioGroup value={formData.socialSupport?.caregiverStress!} onChange={(val) => setFormData(p => ({...p, socialSupport: {...p.socialSupport!, caregiverStress: val}}))} options={['لا يوجد', 'بسيط', 'عالي']} />
-                    </Fieldset>
-                </Accordion>
-                <Accordion title="الحالة النفسية والإدراكية">
-                    <Fieldset legend="الحالة المزاجية">
-                        <RadioGroup value={formData.mentalCognitive?.mood!} onChange={(val) => setFormData(p => ({...p, mentalCognitive: {...p.mentalCognitive!, mood: val}}))} options={['مستقر', 'قلق', 'مكتئب']} />
-                    </Fieldset>
-                     <Fieldset legend="الحالة الإدراكية">
-                        <RadioGroup value={formData.mentalCognitive?.cognition!} onChange={(val) => setFormData(p => ({...p, mentalCognitive: {...p.mentalCognitive!, cognition: val}}))} options={['واعي', 'مشوش', 'كثير النسيان']} />
-                    </Fieldset>
-                </Accordion>
-                 <Accordion title="أهداف ومعوقات الرعاية">
-                    <Fieldset legend="أهداف الرعاية">
-                         <CheckboxGroup value={new Set(formData.goalsOfCare)} onChange={(val) => handleMultiSelect('goalsOfCare', val)} options={['البقاء في المنزل', 'تحسين الوظائف', 'رعاية تلطيفية', 'غير واضح']} />
-                    </Fieldset>
-                    <Fieldset legend="معوقات الرعاية">
-                         <CheckboxGroup value={new Set(formData.barriersToCare)} onChange={(val) => handleMultiSelect('barriersToCare', val)} options={['مالية', 'مواصلات', 'خلافات أسرية', 'أمية', 'سكن غير ملائم']} />
+                 <Accordion title="الوضع الاقتصادي وخدمات النقل">
+                    <Fieldset legend="الدخل التقريبي">
+                        <RadioGroup value={formData.economic?.income!} onChange={(val) => setFormData(p => ({...p, economic: {...p.economic!, income: val}}))} options={['منخفض', 'متوسط', 'مرتفع']} />
                     </Fieldset>
                 </Accordion>
                 <textarea value={formData.swNote || ''} onChange={e => setFormData(p => ({...p, swNote: e.target.value}))} rows={2} placeholder="ملاحظات الأخصائي (اختياري)" maxLength={80} className="w-full p-2 text-sm border rounded-md" />

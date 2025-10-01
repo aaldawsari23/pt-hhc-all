@@ -35,6 +35,7 @@ export interface DoctorFollowUpData {
 }
 
 export interface NurseFollowUpData {
+  // FIX: Allow partial of all vital signs instead of a subset. This resolves errors in the print view component.
   vitals?: Partial<VitalSigns>;
   woundDelta?: 'better' | 'unchanged' | 'worse';
   deviceDelta?: 'better' | 'unchanged' | 'worse';
@@ -128,7 +129,7 @@ export interface NurseAssessmentData extends BaseAssessment {
 
 export interface PtAssessmentData extends BaseAssessment {
     role: Role.PhysicalTherapist;
-    dxFocus: ('TKA' | 'THA' | 'Shoulder Replacement' | 'Spine Surgery' | 'Ortho Trauma' | 'ACL' | 'RCR' | 'Stroke' | 'TBI' | 'SCI' | 'Parkinson\'s' | 'MS' | 'General Debility' | 'Fall Prevention' | 'Amputation' | 'LBP' | 'Neck Pain' | 'Cardiopulmonary' | 'Wound Care')[];
+    dxFocus: ('TKA/THA/ACL/RCR/Stroke/LBP/Neck')[];
     phase: 'acute' | 'subacute' | 'late';
     pain: string; // 0-10
     function: {
@@ -173,16 +174,6 @@ export interface SwAssessmentData extends BaseAssessment {
         abuseSuspicion: 'لا' | 'مشتبه';
     };
     actions: ('تنسيق لوازم' | 'دعم مُعيل' | 'مساعدة مالية' | 'ترتيب نقل' | 'مساعدة قانونية' | 'موارد مجتمعية')[];
-    socialSupport?: {
-        system: 'قوي' | 'متوسط' | 'ضعيف';
-        caregiverStress: 'لا يوجد' | 'بسيط' | 'عالي';
-    };
-    mentalCognitive?: {
-        mood: 'مستقر' | 'قلق' | 'مكتئب';
-        cognition: 'واعي' | 'مشوش' | 'كثير النسيان';
-    };
-    goalsOfCare?: ('البقاء في المنزل' | 'تحسين الوظائف' | 'رعاية تلطيفية' | 'غير واضح')[];
-    barriersToCare?: ('مالية' | 'مواصلات' | 'خلافات أسرية' | 'أمية' | 'سكن غير ملائم')[];
     swNote?: string;
 }
 
@@ -253,7 +244,6 @@ export interface CustomList {
   id: string;
   name: string;
   patientIds: string[];
-  createdAt: string;
 }
 
 export interface AppState {
@@ -299,6 +289,7 @@ export type Action =
     | { type: 'LOG_CONTACT_ATTEMPT'; payload: { patientId: string; type: 'No Answer' | 'Door Not Opened'; staffName: string } }
     | { type: 'CANCEL_VISIT'; payload: { patientId: string; date: string } }
     | { type: 'IMPORT_STATE'; payload: AppState }
+    | { type: 'LOAD_NETLIFY_DATA'; payload: { patients?: Patient[]; staff?: Staff[]; visits?: Visit[] } }
     | { type: 'CREATE_CUSTOM_LIST'; payload: { name: string } }
     | { type: 'DELETE_CUSTOM_LIST'; payload: { id: string } }
     | { type: 'APPLY_CUSTOM_LIST'; payload: { id: string } };

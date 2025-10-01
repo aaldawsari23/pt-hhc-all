@@ -1,15 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { Search, X, Filter, Tag, Users, MapPin, BarChart2, Check, UserPlus, Save, Trash2, List } from 'lucide-react';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
-import { useToast } from '../context/ToastContext';
 
 const FilterChip: React.FC<{ label: string; isActive: boolean; onClick: () => void }> = ({ label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`px-3 py-1 text-xs rounded-full border transition-all duration-200 flex-shrink-0 ${
+        className={`px-3 md:px-4 py-2 text-xs md:text-sm rounded-xl border-2 transition-all duration-200 flex-shrink-0 font-semibold touch-target-44 ${
             isActive
-                ? 'bg-blue-500 text-white border-blue-500 font-semibold'
-                : 'bg-white text-gray-600 border-gray-300 hover:border-blue-400 hover:text-blue-500'
+                ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105'
+                : 'bg-white text-gray-700 border-gray-200 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 shadow-sm'
         }`}
     >
         {label}
@@ -48,7 +47,7 @@ const BulkActions: React.FC = () => {
                     <UserPlus size={16} />
                     Add to Today's Visits
                 </button>
-                 <button onClick={() => dispatch({type: 'CLEAR_SELECTIONS'})} className="w-full text-center text-sm font-semibold py-2 px-4 rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300">
+                 <button onClick={() => dispatch({type: 'CLEAR_SELECTIONS'})} className="w-full text-center text-xs text-gray-500 hover:text-red-500">
                     Clear Selection
                 </button>
             </div>
@@ -87,15 +86,14 @@ const CustomLists: React.FC = () => {
                     </button>
                 </div>
             )}
-             <div className="space-y-2">
+             <div className="flex flex-wrap gap-2">
                 {state.customLists.map(list => (
-                    <div key={list.id} className="group flex items-center justify-between bg-gray-100 rounded-lg text-xs">
-                        <button onClick={() => dispatch({ type: 'APPLY_CUSTOM_LIST', payload: { id: list.id }})} className="px-3 py-2 text-left flex-grow hover:bg-gray-200 rounded-l-lg">
-                            <p className="font-semibold">{list.name} <span className="text-gray-500 font-normal">({list.patientIds.length})</span></p>
-                            <p className="text-gray-400 text-[10px]">{new Date(list.createdAt).toLocaleDateString()}</p>
+                    <div key={list.id} className="group flex items-center bg-gray-200 rounded-full text-xs">
+                        <button onClick={() => dispatch({ type: 'APPLY_CUSTOM_LIST', payload: { id: list.id }})} className="px-3 py-1 hover:bg-gray-300 rounded-l-full">
+                            {list.name} <span className="text-gray-500">({list.patientIds.length})</span>
                         </button>
-                         <button onClick={() => dispatch({ type: 'DELETE_CUSTOM_LIST', payload: { id: list.id }})} className="px-2 py-1 text-gray-500 hover:bg-red-100 hover:text-red-600 rounded-r-lg h-full">
-                            <Trash2 size={14} />
+                         <button onClick={() => dispatch({ type: 'DELETE_CUSTOM_LIST', payload: { id: list.id }})} className="px-2 py-1 text-gray-500 hover:bg-red-200 hover:text-red-600 rounded-r-full">
+                            <Trash2 size={12} />
                         </button>
                     </div>
                 ))}
@@ -107,7 +105,6 @@ const CustomLists: React.FC = () => {
 
 const Sidebar: React.FC = () => {
     const { state, dispatch, filteredPatients } = useHomeHealthcare();
-    const { showToast } = useToast();
     const { filters, areas, selectedPatientIds } = state;
     
     const allTags = useMemo(() => {
@@ -125,6 +122,7 @@ const Sidebar: React.FC = () => {
         const stateToExport = {
             ...state,
             selectedPatientIds: Array.from(state.selectedPatientIds),
+            customLists: state.customLists,
         };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(stateToExport, null, 2));
         const downloadAnchorNode = document.createElement('a');
@@ -133,7 +131,6 @@ const Sidebar: React.FC = () => {
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
-        showToast("Data exported successfully!");
     };
 
     const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,10 +141,10 @@ const Sidebar: React.FC = () => {
                 try {
                     const importedState = JSON.parse(e.target?.result as string);
                     dispatch({ type: 'IMPORT_STATE', payload: importedState });
-                    showToast('Data imported successfully!');
+                    alert('Data imported successfully!');
                 } catch (error) {
                     console.error("Failed to import data:", error);
-                    showToast('Error: Failed to import data. File may be invalid.');
+                    alert('Failed to import data. The file might be corrupted.');
                 }
             };
             reader.readAsText(file);
@@ -157,37 +154,40 @@ const Sidebar: React.FC = () => {
 
 
     return (
-        <aside className="w-80 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 h-full overflow-y-hidden">
-            <div className="p-4 border-b border-gray-200">
+        <aside className="w-full lg:w-80 bg-white border-r border-gray-200 flex flex-col flex-shrink-0 h-full overflow-y-hidden">
+            <div className="p-3 md:p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-500" size={18} />
                     <input
                         type="text"
-                        placeholder="Search by name, ID..."
+                        placeholder="Smart search: name, ID, area, diagnosis..."
                         value={filters.search}
                         onChange={(e) => dispatch({ type: 'SET_SEARCH', payload: e.target.value })}
-                        className="w-full bg-gray-100 border border-gray-200 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        className="w-full bg-white border-2 border-blue-200 rounded-xl pl-11 pr-4 py-3 text-sm md:text-base font-medium focus:outline-none focus:ring-4 focus:ring-blue-300 focus:border-blue-500 shadow-sm placeholder-gray-500 touch-target-44"
                     />
                 </div>
-                <div className="flex items-center justify-between mt-3 text-xs">
-                    <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between mt-3 text-xs md:text-sm">
+                    <div className="flex items-center gap-2 md:gap-3">
                          <input 
                             type="checkbox"
                             id="select-all" 
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            className="h-5 w-5 md:h-6 md:w-6 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 touch-target-44"
                             onChange={e => e.target.checked ? handleSelectAll() : dispatch({type: 'CLEAR_SELECTIONS'})}
                             checked={filteredPatients.length > 0 && selectedPatientIds.size === filteredPatients.length}
                          />
-                         <label htmlFor="select-all" className="text-gray-600">{filteredPatients.length} Results</label>
+                         <label htmlFor="select-all" className="text-gray-700 font-medium">
+                            <span className="text-blue-600 font-bold">{filteredPatients.length}</span> Results
+                            {selectedPatientIds.size > 0 && <span className="text-green-600 ml-1">({selectedPatientIds.size} selected)</span>}
+                         </label>
                     </div>
-                   <button onClick={() => dispatch({type: 'CLEAR_FILTERS'})} className="flex items-center gap-1 text-gray-500 hover:text-red-500">
-                     <X size={12}/> Clear All Filters
+                   <button onClick={() => dispatch({type: 'CLEAR_FILTERS'})} className="flex items-center gap-1 text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded-lg hover:bg-red-50 transition-colors touch-target-44">
+                     <X size={14}/> Clear
                    </button>
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto">
-                <div className="p-4 space-y-4">
+                <div className="p-3 md:p-4 space-y-4 md:space-y-5">
                     <FilterSection icon={<MapPin size={16} />} title="Areas">
                         {areas.map(area => (
                             <FilterChip key={area} label={area} isActive={filters.areas.includes(area)} onClick={() => dispatch({ type: 'TOGGLE_AREA_FILTER', payload: area })} />
@@ -234,11 +234,11 @@ const Sidebar: React.FC = () => {
 };
 
 const FilterSection: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({ icon, title, children }) => (
-    <div>
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-2">
-            {icon} {title}
+    <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4 shadow-sm">
+        <h3 className="text-sm md:text-base font-bold text-gray-800 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <span className="text-blue-600">{icon}</span> {title}
         </h3>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 md:gap-3">
             {children}
         </div>
     </div>

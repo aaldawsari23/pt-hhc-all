@@ -1,0 +1,219 @@
+/* Mobile-First Improvements for Home Healthcare App */
+
+/* Touch targets should be at least 44px */
+.touch-target-44 {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Better tap highlights for mobile */
+button, input[type="checkbox"], input[type="radio"] {
+  -webkit-tap-highlight-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Improved scroll behavior */
+.overflow-scroll, .overflow-y-auto, .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Better focus styles for accessibility */
+button:focus-visible, 
+input:focus-visible, 
+select:focus-visible {
+  outline: 2px solid #3B82F6;
+  outline-offset: 2px;
+}
+
+/* Improved checkbox styling for mobile */
+input[type="checkbox"] {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+input[type="checkbox"]:checked {
+  transform: scale(1.2);
+}
+
+/* Professional medical blue gradient backgrounds */
+.bg-medical-gradient {
+  background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+}
+
+.bg-medical-light {
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Improved button animations */
+.btn-bounce {
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-bounce:active {
+  transform: scale(0.95);
+}
+
+/* Better spacing for mobile */
+@media (max-width: 768px) {
+  .mobile-spacing {
+    padding: 1rem;
+  }
+  
+  .mobile-gap {
+    gap: 0.75rem;
+  }
+  
+  .mobile-text {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+/* Improved modal/form overlays for mobile */
+.form-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+/* Better grid layouts for mobile */
+.mobile-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .mobile-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .mobile-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .mobile-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Professional color variables */
+:root {
+  --medical-blue-50: #eff6ff;
+  --medical-blue-100: #dbeafe;
+  --medical-blue-500: #3b82f6;
+  --medical-blue-600: #2563eb;
+  --medical-blue-700: #1d4ed8;
+  --medical-blue-800: #1e40af;
+  --medical-blue-900: #1e3a8a;
+}
+
+/* Smooth animations */
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Better print styles */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-page-break {
+    page-break-before: always;
+  }
+  
+  .print-no-break {
+    page-break-inside: avoid;
+  }
+  
+  .print-header {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  .print-page {
+    max-width: none;
+    margin: 0;
+    padding: 20px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  
+  .print-footer {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  @page {
+    margin: 0.5in;
+    size: A4;
+  }
+}
