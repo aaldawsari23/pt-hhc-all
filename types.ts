@@ -270,6 +270,12 @@ export interface AppState {
     visits: Visit[];
     teams: Team[];
     customLists: CustomList[];
+    // New mobile form preferences
+    formPreferences?: {
+        useMobileForms: boolean;
+        autoSaveEnabled: boolean;
+        offlineMode: boolean;
+    };
 }
 
 export type Action =
@@ -292,4 +298,177 @@ export type Action =
     | { type: 'LOAD_NETLIFY_DATA'; payload: { patients?: Patient[]; staff?: Staff[]; visits?: Visit[] } }
     | { type: 'CREATE_CUSTOM_LIST'; payload: { name: string } }
     | { type: 'DELETE_CUSTOM_LIST'; payload: { id: string } }
-    | { type: 'APPLY_CUSTOM_LIST'; payload: { id: string } };
+    | { type: 'APPLY_CUSTOM_LIST'; payload: { id: string } }
+    | { type: 'UPDATE_FORM_PREFERENCES'; payload: Partial<AppState['formPreferences']> }
+    | { type: 'SAVE_MOBILE_ASSESSMENT'; payload: { patientId: string; assessment: MobileNurseAssessment } };
+
+// Clinical Standards and Scales
+export const PAIN_SCALE_NRS = {
+  range: [0, 10] as const,
+  description: '0 = no pain, 10 = worst imaginable pain',
+  reference: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8677438/'
+};
+
+export const MORSE_FALL_SCALE = {
+  categories: {
+    'Low (0–24)': { min: 0, max: 24 },
+    'Moderate (25–45)': { min: 25, max: 45 },
+    'High (≥46)': { min: 46, max: Infinity }
+  },
+  reference: 'https://www.brighamandwomens.org/assets/BWH/medical-professionals/pdfs/fall-tips-toolkit-mfs-training-module.pdf'
+};
+
+export const BRADEN_SCALE = {
+  categories: {
+    'Severe (≤9)': { min: 0, max: 9 },
+    'High (10–12)': { min: 10, max: 12 },
+    'Moderate (13–14)': { min: 13, max: 14 },
+    'Mild (15–18)': { min: 15, max: 18 },
+    'No risk (19–23)': { min: 19, max: 23 }
+  },
+  reference: 'https://blog.wcei.net/braden-scale-score-for-predicting-pressure-injury-risk'
+};
+
+export const PRESSURE_INJURY_STAGES = {
+  stages: {
+    'I': 'Non-blanchable erythema of intact skin',
+    'II': 'Partial-thickness skin loss with exposed dermis',
+    'III': 'Full-thickness skin loss',
+    'IV': 'Full-thickness skin and tissue loss',
+    'Unstageable': 'Obscured full-thickness skin and tissue loss',
+    'DTI': 'Deep Tissue Injury - persistent non-blanchable deep red, maroon or purple discoloration'
+  },
+  reference: 'https://cdn.ymaws.com/npiap.com/resource/resmgr/online_store/npiap_pressure_injury_stages.pdf'
+};
+
+export const ADL_DOMAINS = {
+  core: ['bathing', 'dressing', 'toileting', 'transfers', 'continence', 'feeding'],
+  reference: 'https://hign.org/sites/default/files/2020-06/Try_This_General_Assessment_2.pdf'
+};
+
+// Enhanced Mobile Assessment Types
+export interface MobileNurseVitals {
+  bp_systolic: string;
+  bp_diastolic: string;
+  hr: string;
+  rr: string;
+  temp: string;
+  spo2: string;
+  bgl: string;
+  pain: '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10';
+}
+
+export interface MobileNurseAssessment {
+  vitals: MobileNurseVitals;
+  falls_risk: keyof typeof MORSE_FALL_SCALE.categories;
+  pressure_risk: keyof typeof BRADEN_SCALE.categories;
+  mobility: 'Independent' | 'Walker/Cane' | 'Wheelchair' | 'Bedbound';
+  transfers: 'Independent' | 'Supervision' | 'Needs Assist';
+  feeding: 'Independent' | 'Setup' | 'Needs Feeding';
+  toileting: 'Independent' | 'Assist' | 'Incontinent';
+  skin_status: 'Intact' | 'At Risk' | 'Bruising' | 'Wound';
+  wound_details?: {
+    locations: Set<'Heel' | 'Sacrum' | 'Hip' | 'Foot' | 'Leg' | 'Arm' | 'Back' | 'Other'>;
+    other_location?: string;
+    type: 'Pressure' | 'Surgical' | 'Diabetic' | 'Venous';
+    pressure_stage: keyof typeof PRESSURE_INJURY_STAGES.stages;
+    length: string;
+    width: string;
+    depth: string;
+  };
+  interventions: Set<'Wound Care' | 'Blood Draw' | 'Catheter' | 'Insulin' | 'Injection' | 'IV Line' | 'Vaccination'>;
+  vaccination_details?: {
+    type: 'Influenza' | 'Pneumococcal' | 'COVID-19' | 'Tetanus' | 'None';
+    dose: 'First' | 'Second' | 'Booster';
+    site: 'L-Arm' | 'R-Arm' | 'L-Thigh' | 'R-Thigh';
+    batch: string;
+  };
+  caregiver_status: 'Engaged' | 'Stressed' | 'Needs Support';
+  education_topics: Set<'Medications' | 'Wound Care' | 'Fall Prevention'>;
+  understanding: 'Understands' | 'Needs Reinforcement';
+  note?: string;
+}
+
+// Export all mobile form types for easy import
+export type MobileAssessment = MobileNurseAssessment;
+
+// Form validation state
+export interface FormValidationState {
+  isValid: boolean;
+  errors: Record<string, string[]>;
+  warnings: Record<string, string[]>;
+}
+
+// Mobile form state management
+export interface MobileFormState<T> {
+  data: T;
+  isDirty: boolean;
+  isSubmitting: boolean;
+  validation: FormValidationState;
+  lastSaved?: Date;
+}
+
+// Validation helpers
+export const validateVitals = (vitals: Partial<MobileNurseVitals>): string[] => {
+  const errors: string[] = [];
+  
+  if (vitals.spo2 && (parseInt(vitals.spo2) < 70 || parseInt(vitals.spo2) > 100)) {
+    errors.push('SpO₂ should be between 70-100%');
+  }
+  
+  if (vitals.temp && (parseFloat(vitals.temp) < 30 || parseFloat(vitals.temp) > 45)) {
+    errors.push('Temperature should be between 30-45°C');
+  }
+  
+  if (vitals.hr && (parseInt(vitals.hr) < 30 || parseInt(vitals.hr) > 200)) {
+    errors.push('Heart rate should be between 30-200 bpm');
+  }
+  
+  return errors;
+};
+
+export const validateBloodPressure = (systolic: string, diastolic: string): string[] => {
+  const errors: string[] = [];
+  const sys = parseInt(systolic);
+  const dia = parseInt(diastolic);
+  
+  if (sys && dia && sys <= dia) {
+    errors.push('Systolic pressure should be higher than diastolic');
+  }
+  
+  if (sys && (sys < 60 || sys > 250)) {
+    errors.push('Systolic pressure should be between 60-250 mmHg');
+  }
+  
+  if (dia && (dia < 30 || dia > 150)) {
+    errors.push('Diastolic pressure should be between 30-150 mmHg');
+  }
+  
+  return errors;
+};
+
+// Clinical reference constants for easy access
+export const CLINICAL_REFERENCES = {
+  PAIN_SCALE: PAIN_SCALE_NRS,
+  MORSE_FALLS: MORSE_FALL_SCALE,
+  BRADEN: BRADEN_SCALE,
+  PRESSURE_STAGES: PRESSURE_INJURY_STAGES,
+  ADL: ADL_DOMAINS
+} as const;
+
+// Utility type for form chip selections
+export type ChipSelection<T extends readonly string[]> = Set<T[number]>;
+
+// Form state helpers
+export const createEmptyFormValidation = (): FormValidationState => ({
+  isValid: true,
+  errors: {},
+  warnings: {}
+});
+
+export const createMobileFormState = <T>(initialData: T): MobileFormState<T> => ({
+  data: initialData,
+  isDirty: false,
+  isSubmitting: false,
+  validation: createEmptyFormValidation()
+});

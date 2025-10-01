@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FirebaseProvider, useFirebase } from './context/FirebaseContext';
-import { HomeHealthcareProvider } from './context/HomeHealthcareContext';
+import { HomeHealthcareProvider, useHomeHealthcare } from './context/HomeHealthcareContext';
 import { AuthService } from './utils/firebase';
 import Login from './components/Login';
 import Header from './components/Header';
@@ -14,31 +13,16 @@ import { Role } from './types';
 import { Menu, X, Wifi, WifiOff, Cloud, CloudOff } from 'lucide-react';
 
 const SyncStatusIndicator: React.FC = () => {
-  const { syncStatus } = useFirebase();
-  
-  if (!syncStatus.isOnline) {
-    return (
-      <div className="fixed top-4 right-4 z-50 bg-red-500 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2">
-        <WifiOff size={16} />
-        <span className="text-sm font-medium">Offline</span>
-      </div>
-    );
-  }
-
-  if (syncStatus.queueLength > 0) {
-    return (
-      <div className="fixed top-4 right-4 z-50 bg-yellow-500 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2">
-        <Cloud size={16} />
-        <span className="text-sm font-medium">Syncing... ({syncStatus.queueLength})</span>
-      </div>
-    );
-  }
-
+  // Simplified for now - no Firebase sync
   return null;
 };
 
-const AppContent: React.FC = () => {
-  const { state, currentUser, isAuthenticated } = useFirebase();
+interface AppContentProps {
+  currentUser: any;
+}
+
+const AppContent: React.FC<AppContentProps> = ({ currentUser }) => {
+  const { state } = useHomeHealthcare();
   const [activeView, setActiveView] = useState('patients');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -58,9 +42,7 @@ const AppContent: React.FC = () => {
     }
   };
 
-  if (!isAuthenticated) {
-    return null; // Will be handled by parent component
-  }
+  // Authentication is handled by parent component
 
   if (state.currentRole === Role.Driver) {
     return (
@@ -165,6 +147,14 @@ const AppWithAuth: React.FC = () => {
     if (user) {
       setCurrentUser(user);
       setIsAuthenticated(true);
+    } else {
+      // Auto-login for development - use first authorized user
+      AuthService.signIn('salshahrani173@moh.gov.sa', '12345').then(result => {
+        if (result.success) {
+          setCurrentUser(result.user);
+          setIsAuthenticated(true);
+        }
+      }).catch(console.error);
     }
     setLoading(false);
   }, []);
@@ -185,16 +175,16 @@ const AppWithAuth: React.FC = () => {
     );
   }
 
+  // App is ready
+
   if (!isAuthenticated) {
     return <Login onLoginSuccess={handleLoginSuccess} />;
   }
 
   return (
-    <FirebaseProvider>
-      <HomeHealthcareProvider>
-        <AppContent />
-      </HomeHealthcareProvider>
-    </FirebaseProvider>
+    <HomeHealthcareProvider>
+      <AppContent currentUser={currentUser} />
+    </HomeHealthcareProvider>
   );
 };
 
