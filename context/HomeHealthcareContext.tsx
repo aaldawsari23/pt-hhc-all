@@ -1,31 +1,61 @@
-import React, { createContext, useReducer, useContext, useMemo } from 'react';
+import React, { createContext, useReducer, useContext, useMemo, useEffect, useState, useCallback } from 'react';
 import { AppState, Action, Role, Patient, Staff, Visit, Team, DoctorFollowUpData, NurseFollowUpData, PtFollowUpData, SwFollowUpData, ContactAttempt, CustomList } from '../types';
-import { processInitialData, getRiskLevel } from '../utils/helpers';
-import { DATA } from '../data';
+import { getRiskLevel } from '../utils/helpers';
+import { loadPatients, LoadedData } from '../services/dataSource';
 
-const initialData = processInitialData();
+let initialData: LoadedData | null = null;
 
-const doctorStaff = initialData.staff.filter(s => s.المهنة === 'طبيب');
-const nurseStaff = initialData.staff.filter(s => s.المهنة === 'ممرض');
+const getInitialState = (data: LoadedData | null): AppState => {
+    if (!data) {
+        return {
+            patients: [],
+            staff: [],
+            areas: [],
+            criticalCases: {
+                catheter: [],
+                pressureSore: [],
+                tubeFeeding: [],
+                fallRisk: [],
+                ivTherapy: [],
+                ventilation: [],
+            },
+            filters: {
+                search: '',
+                areas: [],
+                tags: [],
+                sex: [],
+                risk: [],
+            },
+            selectedPatientIds: new Set(),
+            currentRole: Role.Doctor,
+            visits: [],
+            teams: [],
+            customLists: [],
+        };
+    }
 
-const initialState: AppState = {
-    ...initialData,
-    filters: {
-        search: '',
-        areas: [],
-        tags: [],
-        sex: [],
-        risk: [],
-    },
-    selectedPatientIds: new Set(),
-    currentRole: Role.Coordinator,
-    visits: [],
-    teams: [
-        { id: 'team1', name: 'Team 1', members: [doctorStaff[0], nurseStaff[0], nurseStaff[1]] },
-        { id: 'team2', name: 'Team 2', members: [doctorStaff[1], nurseStaff[2], nurseStaff[3]] },
-        { id: 'team3', name: 'Team 3', members: [doctorStaff[2], nurseStaff[4], nurseStaff[5]] },
-    ],
-    customLists: [],
+    const doctorStaff = data.staff.filter(s => s.المهنة === 'طبيب');
+    const nurseStaff = data.staff.filter(s => s.المهنة === 'ممرض');
+
+    return {
+        ...data,
+        filters: {
+            search: '',
+            areas: [],
+            tags: [],
+            sex: [],
+            risk: [],
+        },
+        selectedPatientIds: new Set(),
+        currentRole: Role.Doctor,
+        visits: [],
+        teams: [
+            { id: 'team1', name: 'Team 1', members: [doctorStaff[0], nurseStaff[0], nurseStaff[1]].filter(Boolean) },
+            { id: 'team2', name: 'Team 2', members: [doctorStaff[1], nurseStaff[2], nurseStaff[3]].filter(Boolean) },
+            { id: 'team3', name: 'Team 3', members: [doctorStaff[2], nurseStaff[4], nurseStaff[5]].filter(Boolean) },
+        ].filter(team => team.members.length > 0),
+        customLists: [],
+    };
 };
 
 const reducer = (state: AppState, action: Action): AppState => {
@@ -142,12 +172,10 @@ const reducer = (state: AppState, action: Action): AppState => {
                 ...state,
                 patients: state.patients.map(p => {
                     if (p.nationalId === action.payload.patientId) {
-                        const newAttempt: ContactAttempt = {
-                            date: new Date().toISOString(),
-                            type: action.payload.type,
-                            staffName: action.payload.staffName,
+                        return { 
+                            ...p, 
+                            contactAttempts: [action.payload.contactAttempt, ...(p.contactAttempts || [])] 
                         };
-                        return { ...p, contactAttempts: [newAttempt, ...(p.contactAttempts || [])] };
                     }
                     return p;
                 })
@@ -164,7 +192,7 @@ const reducer = (state: AppState, action: Action): AppState => {
             if (action.payload && action.payload.patients && action.payload.filters) {
                 // Re-hydrate the Set for selectedPatientIds from the imported array
                 const rehydratedState = {
-                    ...initialState, // Start with a clean slate
+                    ...getInitialState(null), // Start with a clean slate
                     ...action.payload,
                     selectedPatientIds: new Set(action.payload.selectedPatientIds || []),
                 };
@@ -201,13 +229,112 @@ const reducer = (state: AppState, action: Action): AppState => {
     }
 };
 
-const HomeHealthcareContext = createContext<{ state: AppState; dispatch: React.Dispatch<Action>, filteredPatients: Patient[] } | undefined>(undefined);
+interface ContextActions {
+  selectPatient: (patientId: string) => void;
+  clearSelections: () => void;
+  updateFilters: (filters: Partial<AppState['filters']>) => void;
+  setRole: (role: Role) => void;
+  logContactAttempt: (patientId: string, attempt: ContactAttempt) => void;
+}
+
+const HomeHealthcareContext = createContext<{ 
+  state: AppState; 
+  dispatch: React.Dispatch<Action>;
+  filteredPatients: Patient[];
+  actions: ContextActions;
+} | undefined>(undefined);
 
 export const HomeHealthcareProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [state, dispatch] = useReducer(reducer, initialState);
+    const [dataLoaded, setDataLoaded] = useState(false);
+    const [state, dispatch] = useReducer(reducer, getInitialState(null));
+
+    // Action functions
+    const selectPatient = useCallback((patientId: string) => {
+        dispatch({ type: 'TOGGLE_PATIENT_SELECTION', payload: patientId });
+    }, []);
+
+    const clearSelections = useCallback(() => {
+        dispatch({ type: 'CLEAR_SELECTIONS' });
+    }, []);
+
+    const updateFilters = useCallback((filters: Partial<AppState['filters']>) => {
+        Object.entries(filters).forEach(([key, value]) => {
+            switch (key) {
+                case 'search':
+                    dispatch({ type: 'SET_SEARCH', payload: value as string });
+                    break;
+                case 'areas':
+                    // Handle array updates
+                    break;
+                // Add other filter types as needed
+            }
+        });
+    }, []);
+
+    const setRole = useCallback((role: Role) => {
+        dispatch({ type: 'SET_ROLE', payload: role });
+    }, []);
+
+    const logContactAttempt = useCallback((patientId: string, attempt: ContactAttempt) => {
+        dispatch({ type: 'LOG_CONTACT_ATTEMPT', payload: { patientId, contactAttempt: attempt } });
+    }, []);
+
+    const actions = useMemo(() => ({
+        selectPatient,
+        clearSelections,
+        updateFilters,
+        setRole,
+        logContactAttempt
+    }), [selectPatient, clearSelections, updateFilters, setRole, logContactAttempt]);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                console.log('🔄 Starting to load patient data...');
+                const data = await loadPatients();
+                
+                // Validate loaded data
+                if (!data || !data.patients || !Array.isArray(data.patients)) {
+                    throw new Error('Invalid data structure received');
+                }
+                
+                console.log('✅ Patient data loaded:', { 
+                    patientsCount: data.patients.length, 
+                    staffCount: data.staff.length,
+                    areasCount: data.areas.length
+                });
+                
+                initialData = data;
+                const newState = getInitialState(data);
+                dispatch({ type: 'IMPORT_STATE', payload: newState });
+                setDataLoaded(true);
+                console.log('✅ HomeHealthcare context initialized successfully');
+            } catch (error) {
+                console.error('❌ Failed to load patient data:', error);
+                
+                // Load empty state as fallback
+                const fallbackState = getInitialState(null);
+                dispatch({ type: 'IMPORT_STATE', payload: fallbackState });
+                setDataLoaded(true);
+                
+                console.warn('⚠️ Using empty state as fallback');
+            }
+        };
+
+        if (!dataLoaded) {
+            loadData();
+        }
+    }, [dataLoaded]);
 
     const filteredPatients = useMemo(() => {
         const { patients, filters } = state;
+        
+        // Safety check: ensure patients array exists
+        if (!patients || !Array.isArray(patients)) {
+            console.warn('Patients array is undefined or not an array:', patients);
+            return [];
+        }
+        
         const { search, areas, tags, sex, risk } = filters;
         const lowerCaseSearch = search.toLowerCase();
 
@@ -229,7 +356,7 @@ export const HomeHealthcareProvider: React.FC<{ children: React.ReactNode }> = (
     }, [state.patients, state.filters]);
 
     return (
-        <HomeHealthcareContext.Provider value={{ state, dispatch, filteredPatients }}>
+        <HomeHealthcareContext.Provider value={{ state, dispatch, filteredPatients, actions }}>
             {children}
         </HomeHealthcareContext.Provider>
     );

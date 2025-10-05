@@ -181,8 +181,13 @@ export type Assessment = DoctorAssessmentData | NurseAssessmentData | PtAssessme
 
 export interface ContactAttempt {
     date: string;
-    type: 'No Answer' | 'Door Not Opened';
+    type: 'No Answer' | 'Door Not Opened' | 'Phone Answered' | 'Busy' | 'Wrong Number' | 'Phone Off' | 'Family Answered' | 'Rescheduled' | 'Refused Visit' | 'Patient Not Available';
     staffName: string;
+    notes?: string;
+    callDuration?: number; // in minutes
+    nextAttemptScheduled?: string; // ISO date string
+    outcome?: 'Successful' | 'Failed' | 'Rescheduled' | 'Cancelled';
+    contactMethod?: 'Phone Call' | 'Home Visit' | 'WhatsApp' | 'SMS';
 }
 
 export interface Patient {
@@ -221,8 +226,7 @@ export enum Role {
     Nurse = 'Nurse',
     PhysicalTherapist = 'Physical Therapist',
     SocialWorker = 'Social Worker',
-    Driver = 'Driver',
-    Coordinator = 'Coordinator'
+    Driver = 'Driver'
 }
 
 export interface Visit {
@@ -292,7 +296,7 @@ export type Action =
     | { type: 'ASSIGN_TO_VISITS'; payload: { patientIds: string[], date: string, teamId: string } }
     | { type: 'SAVE_VISIT_NOTE'; payload: { visitId: string, role: Role, note: DoctorFollowUpData | NurseFollowUpData | PtFollowUpData | SwFollowUpData, user: string } }
     | { type: 'SAVE_ASSESSMENT'; payload: { patientId: string; assessment: Assessment } }
-    | { type: 'LOG_CONTACT_ATTEMPT'; payload: { patientId: string; type: 'No Answer' | 'Door Not Opened'; staffName: string } }
+    | { type: 'LOG_CONTACT_ATTEMPT'; payload: { patientId: string; contactAttempt: ContactAttempt } }
     | { type: 'CANCEL_VISIT'; payload: { patientId: string; date: string } }
     | { type: 'IMPORT_STATE'; payload: AppState }
     | { type: 'LOAD_NETLIFY_DATA'; payload: { patients?: Patient[]; staff?: Staff[]; visits?: Visit[] } }

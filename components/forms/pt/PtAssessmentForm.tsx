@@ -10,51 +10,164 @@ interface AssessmentFormProps {
     onCancel: () => void;
 }
 
-const dxFocusOptions = ['TKA/THA/ACL/RCR/Stroke/LBP/Neck'] as const;
-const interventionsOptions = ['ROM', 'Stretch', 'Strength', 'Balance', 'Gait', 'TENS', 'NMES', 'US', 'Ice', 'Heat', 'soft tissue', 'joint mobs'] as const;
+// New types for physiotherapy initial assessment
+type PainLevel = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10';
+type MobilityLevel = 'Independent' | 'Min Assist' | 'Max Assist' | 'Dependent';
+type BalanceLevel = 'Normal' | 'Fair' | 'Poor';
+type ROMDegree = string; // Will be input field
+type MMTScore = '0' | '1' | '2' | '3' | '4' | '5';
+type ROMRegion = 'Shoulder' | 'Elbow' | 'Hip' | 'Knee' | 'Ankle';
+type PTProblem = 'Weakness' | 'Spasticity' | 'Contracture' | 'Joint Stiffness' | 'Pain' | 'Balance Deficit' | 'Gait Abnormality' | 'Other…';
+type ShortTermGoal = 'Improve ROM' | 'Improve Strength' | 'Improve Balance' | 'Pain Reduction';
+type LongTermGoal = 'Independent Ambulation' | 'Independent Transfers' | 'Prevent Complications' | 'Improve ADLs';
+
+interface ROMMMTEntry {
+    region: ROMRegion;
+    rom: string;
+    mmt: MMTScore;
+}
+
+interface NewPTAssessmentData {
+    // Vitals
+    vitals: {
+        hr: string;
+        rr: string;
+        spo2: string;
+        bp_systolic: string;
+        bp_diastolic: string;
+        pain: PainLevel;
+    };
+    
+    // Functional mobility
+    bedMobility: MobilityLevel;
+    transfers: MobilityLevel;
+    ambulation: 'Independent' | 'Walker' | 'Cane' | 'Wheelchair' | 'Bedbound';
+    balance: BalanceLevel;
+    
+    // ROM/MMT entries
+    romMmtEntries: ROMMMTEntry[];
+    
+    // Common PT problems
+    problems: Set<PTProblem>;
+    otherProblem?: string;
+    
+    // Goals
+    shortTermGoals: Set<ShortTermGoal>;
+    longTermGoals: Set<LongTermGoal>;
+    
+    // Optional note
+    note?: string;
+}
 
 const PtAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCancel }) => {
     const { state } = useHomeHealthcare();
-    const [formData, setFormData] = useState<Partial<PtAssessmentData>>({
-        role: Role.PhysicalTherapist,
-        status: 'Unchanged',
-        plan: 'Continue same plan',
-        dxFocus: [],
-        phase: 'subacute',
-        pain: '0',
-        function: {
-            bedMobility: 'supervision',
-            transfers: 'supervision',
-            gaitDistance: '5–20m',
-            assistiveDevice: 'walker',
-            stairs: 'none',
-            balance: { static: 'fair', dynamic: 'fair' }
+    const [formData, setFormData] = useState<NewPTAssessmentData>({
+        vitals: {
+            hr: '',
+            rr: '',
+            spo2: '',
+            bp_systolic: '',
+            bp_diastolic: '',
+            pain: '0'
         },
-        romMmt: { region: [], rom: '↓mild', mmt: '3' },
-        interventions: []
+        bedMobility: 'Independent',
+        transfers: 'Independent',
+        ambulation: 'Independent',
+        balance: 'Normal',
+        romMmtEntries: [
+            { region: 'Shoulder', rom: '', mmt: '5' },
+            { region: 'Elbow', rom: '', mmt: '5' },
+            { region: 'Hip', rom: '', mmt: '5' },
+            { region: 'Knee', rom: '', mmt: '5' },
+            { region: 'Ankle', rom: '', mmt: '5' }
+        ],
+        problems: new Set(),
+        shortTermGoals: new Set(),
+        longTermGoals: new Set()
     });
 
-    const handleMultiSelect = <K extends keyof PtAssessmentData>(field: K, value: PtAssessmentData[K] extends (infer U)[] ? U : never) => {
+    const handleVitalChange = (field: keyof NewPTAssessmentData['vitals'], value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            vitals: { ...prev.vitals, [field]: value }
+        }));
+    };
+    
+    const toggleProblem = (problem: PTProblem) => {
         setFormData(prev => {
-            const currentValues = (prev[field] as any[] || []) as any[];
-            const newValues = currentValues.includes(value)
-                ? currentValues.filter(v => v !== value)
-                : [...currentValues, value];
-            return { ...prev, [field]: newValues };
+            const newProblems = new Set(prev.problems);
+            if (newProblems.has(problem)) {
+                newProblems.delete(problem);
+            } else {
+                newProblems.add(problem);
+            }
+            return { ...prev, problems: newProblems };
+        });
+    };
+    
+    const toggleShortTermGoal = (goal: ShortTermGoal) => {
+        setFormData(prev => {
+            const newGoals = new Set(prev.shortTermGoals);
+            if (newGoals.has(goal)) {
+                newGoals.delete(goal);
+            } else {
+                newGoals.add(goal);
+            }
+            return { ...prev, shortTermGoals: newGoals };
+        });
+    };
+    
+    const toggleLongTermGoal = (goal: LongTermGoal) => {
+        setFormData(prev => {
+            const newGoals = new Set(prev.longTermGoals);
+            if (newGoals.has(goal)) {
+                newGoals.delete(goal);
+            } else {
+                newGoals.add(goal);
+            }
+            return { ...prev, longTermGoals: newGoals };
+        });
+    };
+    
+    const updateROMMMT = (index: number, field: 'rom' | 'mmt', value: string) => {
+        setFormData(prev => {
+            const newEntries = [...prev.romMmtEntries];
+            newEntries[index] = { ...newEntries[index], [field]: value };
+            return { ...prev, romMmtEntries: newEntries };
         });
     };
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
         const currentUser = state.staff.find(s => s.المهنة.includes('علاج طبيعي')) || state.staff[0];
-        const newAssessment: PtAssessmentData = {
+        
+        // Convert new form data to legacy format for compatibility
+        const legacyAssessment: PtAssessmentData = {
             id: Date.now().toString(),
             date: new Date().toISOString(),
             assessorId: currentUser.رقم_الهوية,
             assessorName: currentUser.الاسم,
-            ...formData,
-        } as PtAssessmentData;
-        onSave(newAssessment);
+            role: Role.PhysicalTherapist,
+            status: 'Unchanged', // Default for now
+            plan: 'Continue same plan', // Default for now
+            dxFocus: [],
+            phase: 'subacute',
+            pain: formData.vitals.pain,
+            function: {
+                bedMobility: formData.bedMobility,
+                transfers: formData.transfers,
+                gaitDistance: '5–20m', // Default
+                assistiveDevice: formData.ambulation === 'Walker' ? 'walker' : 
+                               formData.ambulation === 'Cane' ? 'cane' : 'none',
+                stairs: 'none',
+                balance: { static: formData.balance.toLowerCase() as any, dynamic: formData.balance.toLowerCase() as any }
+            },
+            romMmt: { region: [], rom: 'WNL', mmt: '5' },
+            interventions: [],
+            ptNote: formData.note
+        };
+        
+        onSave(legacyAssessment);
     };
 
     return (
@@ -67,28 +180,176 @@ const PtAssessmentForm: React.FC<AssessmentFormProps> = ({ patient, onSave, onCa
                 </div>
             </div>
             <div className="space-y-2 overflow-y-auto flex-grow pr-1 text-sm">
-                <Accordion title="Focus & Function" defaultOpen={true}>
-                    <Fieldset legend="Dx Focus">
-                        <CheckboxGroup value={new Set(formData.dxFocus)} onChange={(val) => handleMultiSelect('dxFocus', val)} options={dxFocusOptions} />
-                    </Fieldset>
-                    <Fieldset legend="Gait Distance">
-                         <RadioGroup value={formData.function?.gaitDistance!} onChange={(val) => setFormData(p => ({...p, function: {...p.function!, gaitDistance: val}}))} options={['0–5m', '5–20m', '20–100m', '>100m']} />
-                    </Fieldset>
+                {/* Vitals Section */}
+                <Accordion title="Vitals (row inputs)" defaultOpen={true}>
+                    <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="flex gap-1">
+                                <input 
+                                    value={formData.vitals.hr} 
+                                    onChange={(e) => handleVitalChange('hr', e.target.value)} 
+                                    placeholder="__" 
+                                    className="w-16 p-1 text-center border rounded text-xs"
+                                />
+                                <span className="self-center text-xs text-gray-600">HR</span>
+                            </div>
+                            <div className="flex gap-1">
+                                <input 
+                                    value={formData.vitals.rr} 
+                                    onChange={(e) => handleVitalChange('rr', e.target.value)} 
+                                    placeholder="__" 
+                                    className="w-16 p-1 text-center border rounded text-xs"
+                                />
+                                <span className="self-center text-xs text-gray-600">RR</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="flex gap-1">
+                                <input 
+                                    value={formData.vitals.spo2} 
+                                    onChange={(e) => handleVitalChange('spo2', e.target.value)} 
+                                    placeholder="__" 
+                                    className="w-16 p-1 text-center border rounded text-xs"
+                                />
+                                <span className="self-center text-xs text-gray-600">SpO₂%</span>
+                            </div>
+                            <div className="flex gap-1">
+                                <input 
+                                    value={formData.vitals.bp_systolic} 
+                                    onChange={(e) => handleVitalChange('bp_systolic', e.target.value)} 
+                                    placeholder="__" 
+                                    className="w-12 p-1 text-center border rounded text-xs"
+                                />
+                                <span className="self-center text-xs">/</span>
+                                <input 
+                                    value={formData.vitals.bp_diastolic} 
+                                    onChange={(e) => handleVitalChange('bp_diastolic', e.target.value)} 
+                                    placeholder="__" 
+                                    className="w-12 p-1 text-center border rounded text-xs"
+                                />
+                                <span className="self-center text-xs text-gray-600">BP</span>
+                            </div>
+                        </div>
+                        <Fieldset legend="Pain (0–10)">
+                            <RadioGroup 
+                                value={formData.vitals.pain}
+                                onChange={(val) => handleVitalChange('pain', val)}
+                                options={['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'] as const}
+                            />
+                        </Fieldset>
+                    </div>
                 </Accordion>
-                <Accordion title="Interventions">
-                    <Fieldset legend="Interventions Today">
-                        <CheckboxGroup value={new Set(formData.interventions)} onChange={(val) => handleMultiSelect('interventions', val)} options={interventionsOptions} />
-                    </Fieldset>
+                
+                {/* Functional Mobility Section */}
+                <Accordion title="Functional mobility (single-select per row)">
+                    <div className="space-y-3">
+                        <Fieldset legend="Bed mobility">
+                            <RadioGroup 
+                                value={formData.bedMobility}
+                                onChange={(val) => setFormData(p => ({...p, bedMobility: val}))}
+                                options={['Independent', 'Min Assist', 'Max Assist', 'Dependent'] as const}
+                            />
+                        </Fieldset>
+                        
+                        <Fieldset legend="Transfers">
+                            <RadioGroup 
+                                value={formData.transfers}
+                                onChange={(val) => setFormData(p => ({...p, transfers: val}))}
+                                options={['Independent', 'Min Assist', 'Max Assist', 'Dependent'] as const}
+                            />
+                        </Fieldset>
+                        
+                        <Fieldset legend="Ambulation">
+                            <RadioGroup 
+                                value={formData.ambulation}
+                                onChange={(val) => setFormData(p => ({...p, ambulation: val}))}
+                                options={['Independent', 'Walker', 'Cane', 'Wheelchair', 'Bedbound'] as const}
+                            />
+                        </Fieldset>
+                        
+                        <Fieldset legend="Balance">
+                            <RadioGroup 
+                                value={formData.balance}
+                                onChange={(val) => setFormData(p => ({...p, balance: val}))}
+                                options={['Normal', 'Fair', 'Poor'] as const}
+                            />
+                        </Fieldset>
+                    </div>
                 </Accordion>
-                 <Accordion title="Status & Plan">
-                    <Fieldset legend="Status">
-                        <RadioGroup value={formData.status!} onChange={(val) => setFormData(p => ({...p, status: val}))} options={['Improved', 'Unchanged', 'Worsened']} />
-                    </Fieldset>
-                    <Fieldset legend="Plan">
-                         <RadioGroup value={formData.plan!} onChange={(val) => setFormData(p => ({...p, plan: val}))} options={['Continue same plan', 'Change plan']} />
-                    </Fieldset>
+                
+                {/* ROM/MMT Section */}
+                <Accordion title="ROM / MMT (inputs table with 5 rows)">
+                    <div className="space-y-2">
+                        <div className="grid grid-cols-3 gap-2 text-xs font-semibold text-gray-600">
+                            <span>Region</span>
+                            <span>ROM (°)</span>
+                            <span>MMT (0–5)</span>
+                        </div>
+                        {formData.romMmtEntries.map((entry, index) => (
+                            <div key={entry.region} className="grid grid-cols-3 gap-2 items-center">
+                                <span className="text-xs font-medium">{entry.region}</span>
+                                <input 
+                                    value={entry.rom}
+                                    onChange={(e) => updateROMMMT(index, 'rom', e.target.value)}
+                                    placeholder="__"
+                                    className="w-16 p-1 text-center border rounded text-xs"
+                                />
+                                <RadioGroup 
+                                    value={entry.mmt}
+                                    onChange={(val) => updateROMMMT(index, 'mmt', val)}
+                                    options={['0', '1', '2', '3', '4', '5'] as const}
+                                />
+                            </div>
+                        ))}
+                    </div>
                 </Accordion>
-                <textarea value={formData.ptNote || ''} onChange={e => setFormData(p => ({...p, ptNote: e.target.value}))} rows={2} placeholder="Optional PT note..." maxLength={80} className="w-full p-2 text-sm border rounded-md" />
+                
+                {/* Common PT Problems Section */}
+                <Accordion title="Common PT problems (chips)">
+                    <CheckboxGroup 
+                        value={formData.problems}
+                        onChange={toggleProblem}
+                        options={['Weakness', 'Spasticity', 'Contracture', 'Joint Stiffness', 'Pain', 'Balance Deficit', 'Gait Abnormality', 'Other…'] as const}
+                    />
+                    {formData.problems.has('Other…') && (
+                        <input 
+                            value={formData.otherProblem || ''}
+                            onChange={(e) => setFormData(p => ({...p, otherProblem: e.target.value}))}
+                            placeholder="Specify other problem"
+                            className="mt-2 w-full p-2 text-xs border rounded"
+                        />
+                    )}
+                </Accordion>
+                
+                {/* Goals Section */}
+                <Accordion title="Goals (chips; separate Short vs Long)">
+                    <div className="space-y-3">
+                        <Fieldset legend="Short-term">
+                            <CheckboxGroup 
+                                value={formData.shortTermGoals}
+                                onChange={toggleShortTermGoal}
+                                options={['Improve ROM', 'Improve Strength', 'Improve Balance', 'Pain Reduction'] as const}
+                            />
+                        </Fieldset>
+                        
+                        <Fieldset legend="Long-term">
+                            <CheckboxGroup 
+                                value={formData.longTermGoals}
+                                onChange={toggleLongTermGoal}
+                                options={['Independent Ambulation', 'Independent Transfers', 'Prevent Complications', 'Improve ADLs'] as const}
+                            />
+                        </Fieldset>
+                    </div>
+                </Accordion>
+                
+                {/* Optional Note */}
+                <textarea 
+                    value={formData.note || ''} 
+                    onChange={e => setFormData(p => ({...p, note: e.target.value}))} 
+                    rows={2} 
+                    placeholder="Optional note" 
+                    className="w-full p-2 text-sm border rounded-md" 
+                />
             </div>
         </form>
     );

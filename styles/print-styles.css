@@ -1,0 +1,400 @@
+/* Enhanced Print Styles for A4 Format with Arabic Support */
+
+/* A4 Page Setup */
+@page {
+    size: A4;
+    margin: 10mm 12mm 15mm 12mm; /* top right bottom left */
+}
+
+/* Print-specific styles */
+@media print {
+    /* Remove default browser margins */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    body {
+        font-family: 'Arial', 'Segoe UI', 'Tahoma', sans-serif;
+        font-size: 12pt;
+        line-height: 1.4;
+        color: #000;
+        background: white;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Arabic text support */
+    .arabic-text {
+        font-family: 'Traditional Arabic', 'Arabic Typesetting', 'Segoe UI', sans-serif;
+        direction: rtl;
+        text-align: right;
+        line-height: 1.6;
+    }
+
+    /* Page breaks */
+    .print-page {
+        page-break-before: always;
+        page-break-after: always;
+    }
+
+    .print-no-break {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .print-break-before {
+        page-break-before: always;
+        break-before: page;
+    }
+
+    .print-break-after {
+        page-break-after: always;
+        break-after: page;
+    }
+
+    /* Header styling */
+    .print-header {
+        background: #1e40af !important;
+        color: white !important;
+        margin-bottom: 15pt;
+        padding: 12pt;
+        page-break-inside: avoid;
+        border-radius: 4pt;
+    }
+
+    .print-header h1 {
+        font-size: 18pt;
+        font-weight: bold;
+        margin: 0 0 4pt 0;
+        color: white !important;
+    }
+
+    .print-header h2 {
+        font-size: 14pt;
+        font-weight: bold;
+        margin: 4pt 0;
+        color: white !important;
+    }
+
+    .print-header .arabic-text {
+        font-size: 14pt;
+        color: #e0e7ff !important;
+    }
+
+    /* Patient info styling */
+    .patient-info {
+        background: #f8fafc !important;
+        border: 1pt solid #cbd5e1 !important;
+        padding: 10pt;
+        margin-bottom: 15pt;
+        page-break-inside: avoid;
+        border-radius: 3pt;
+    }
+
+    .patient-info h3 {
+        color: #1e293b !important;
+        font-size: 14pt;
+        font-weight: bold;
+        margin: 0 0 10pt 0;
+        border-bottom: 1pt solid #cbd5e1;
+        padding-bottom: 5pt;
+    }
+
+    /* Content sections */
+    .assessment-details {
+        margin-bottom: 20pt;
+    }
+
+    .assessment-details .bg-blue-50 {
+        background: #eff6ff !important;
+        border: 1pt solid #3b82f6 !important;
+        padding: 10pt;
+        margin-bottom: 10pt;
+        border-radius: 3pt;
+        page-break-inside: avoid;
+    }
+
+    .assessment-details h3 {
+        color: #1e40af !important;
+        font-size: 13pt;
+        font-weight: bold;
+        margin: 0 0 10pt 0;
+    }
+
+    .assessment-details h4 {
+        color: #1e40af !important;
+        font-size: 12pt;
+        font-weight: bold;
+        margin: 5pt 0;
+    }
+
+    /* Grid layouts */
+    .grid {
+        display: grid;
+        gap: 8pt;
+    }
+
+    .grid-cols-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    /* Cards and boxes */
+    .bg-white {
+        background: white !important;
+        border: 1pt solid #e2e8f0 !important;
+        padding: 8pt;
+        border-radius: 2pt;
+    }
+
+    /* Text colors for print */
+    .text-blue-900 {
+        color: #1e3a8a !important;
+        font-weight: bold;
+    }
+
+    .text-green-900 {
+        color: #14532d !important;
+        font-weight: bold;
+    }
+
+    .text-purple-900 {
+        color: #581c87 !important;
+        font-weight: bold;
+    }
+
+    .text-orange-900 {
+        color: #9a3412 !important;
+        font-weight: bold;
+    }
+
+    .text-gray-600 {
+        color: #4b5563 !important;
+    }
+
+    .text-gray-800 {
+        color: #1f2937 !important;
+    }
+
+    /* Borders for print */
+    .border-l-4 {
+        border-left: 3pt solid;
+    }
+
+    .border-blue-500 {
+        border-left-color: #3b82f6 !important;
+    }
+
+    .border-green-500 {
+        border-left-color: #10b981 !important;
+    }
+
+    .border-purple-500 {
+        border-left-color: #8b5cf6 !important;
+    }
+
+    .border-orange-500 {
+        border-left-color: #f97316 !important;
+    }
+
+    /* Contact log specific styles */
+    .contact-log-entry {
+        background: white !important;
+        border: 1pt solid #d1d5db !important;
+        padding: 8pt;
+        margin-bottom: 8pt;
+        page-break-inside: avoid;
+        border-radius: 2pt;
+    }
+
+    .contact-log-entry .contact-type {
+        font-weight: bold;
+        color: #374151 !important;
+    }
+
+    .contact-log-entry .contact-date {
+        color: #6b7280 !important;
+        font-size: 10pt;
+    }
+
+    /* Visit notes styles */
+    .visit-note {
+        background: white !important;
+        border: 1pt solid #d1d5db !important;
+        padding: 10pt;
+        margin-bottom: 10pt;
+        page-break-inside: avoid;
+        border-radius: 2pt;
+    }
+
+    .visit-note h4 {
+        color: #1f2937 !important;
+        font-size: 12pt;
+        font-weight: bold;
+        margin: 0 0 5pt 0;
+    }
+
+    /* Footer styling */
+    .print-footer {
+        position: fixed;
+        bottom: 8mm;
+        left: 12mm;
+        right: 12mm;
+        text-align: center;
+        font-size: 10pt;
+        color: #6b7280 !important;
+        border-top: 1pt solid #e5e7eb;
+        padding-top: 5pt;
+    }
+
+    /* Hide elements that shouldn't print */
+    .no-print,
+    .print\\:hidden,
+    button:not(.print-button),
+    .modal-overlay,
+    .sidebar,
+    .header,
+    .navigation {
+        display: none !important;
+    }
+
+    /* Tables */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 15pt;
+        page-break-inside: avoid;
+    }
+
+    th, td {
+        border: 1pt solid #d1d5db;
+        padding: 5pt 8pt;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background: #f3f4f6 !important;
+        font-weight: bold;
+        color: #374151 !important;
+    }
+
+    /* RTL Support for Arabic */
+    .rtl {
+        direction: rtl;
+        text-align: right;
+    }
+
+    .rtl table {
+        direction: rtl;
+    }
+
+    .rtl th, .rtl td {
+        text-align: right;
+    }
+
+    /* Signature lines */
+    .signature-section {
+        margin-top: 30pt;
+        page-break-inside: avoid;
+    }
+
+    .signature-line {
+        border-bottom: 1pt solid #000;
+        width: 200pt;
+        margin: 20pt 0 5pt 0;
+        display: inline-block;
+    }
+
+    .signature-label {
+        font-size: 10pt;
+        color: #6b7280 !important;
+        margin-top: 3pt;
+    }
+
+    /* Assessment-specific styles */
+    .assessment-item {
+        background: white !important;
+        border: 1pt solid #e5e7eb !important;
+        padding: 10pt;
+        margin-bottom: 10pt;
+        page-break-inside: avoid;
+        border-radius: 2pt;
+    }
+
+    .assessment-item .role-badge {
+        background: #1e40af !important;
+        color: white !important;
+        padding: 2pt 6pt;
+        border-radius: 2pt;
+        font-size: 10pt;
+        font-weight: bold;
+    }
+
+    /* Medical information highlighting */
+    .medical-highlight {
+        background: #fef3c7 !important;
+        border-left: 3pt solid #f59e0b !important;
+        padding: 8pt;
+        margin: 8pt 0;
+        page-break-inside: avoid;
+    }
+
+    .critical-info {
+        background: #fee2e2 !important;
+        border-left: 3pt solid #ef4444 !important;
+        padding: 8pt;
+        margin: 8pt 0;
+        page-break-inside: avoid;
+    }
+
+    /* Device and condition tags */
+    .medical-tag {
+        display: inline-block;
+        background: #e0e7ff !important;
+        color: #3730a3 !important;
+        padding: 2pt 6pt;
+        margin: 2pt;
+        border-radius: 2pt;
+        font-size: 10pt;
+        border: 1pt solid #c7d2fe;
+    }
+
+    /* Responsive print adjustments */
+    @media print and (max-width: 8.27in) {
+        .grid-cols-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .flex {
+            display: block;
+        }
+        
+        .flex > * {
+            margin-bottom: 10pt;
+        }
+    }
+}
+
+/* Screen-specific preview styles */
+@media screen {
+    .print-preview {
+        max-width: 794px; /* A4 width at 96 DPI */
+        margin: 0 auto;
+        background: white;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        font-family: 'Arial', 'Segoe UI', sans-serif;
+    }
+    
+    .print-preview .arabic-text {
+        font-family: 'Traditional Arabic', 'Arabic Typesetting', 'Segoe UI', sans-serif;
+        direction: rtl;
+        text-align: right;
+    }
+}

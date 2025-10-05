@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { useHomeHealthcare } from '../context/HomeHealthcareContext';
 import { Patient, Role, Visit, DoctorFollowUpData, NurseFollowUpData, PtFollowUpData, SwFollowUpData } from '../types';
 import { getInitials } from '../utils/helpers';
-import { CheckCircle, Clock, Edit3, Save, Stethoscope, HandHeart, Printer, HeartPulse, Accessibility } from 'lucide-react';
+import { CheckCircle, Clock, Edit3, Save, Stethoscope, HandHeart, Printer, HeartPulse, Accessibility, QrCode } from 'lucide-react';
 import DoctorFollowUpForm from './forms/doctor/DoctorFollowUpForm';
 import NurseFollowUpForm from './forms/nurse/NurseFollowUpForm';
 import PtFollowUpForm from './forms/pt/PtFollowUpForm';
@@ -208,7 +208,9 @@ const VisitCard: React.FC<{ visit: Visit, patient: Patient | undefined }> = ({ v
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 space-y-4">
             <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
-                     <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-blue-800 bg-blue-100">{getInitials(patient.nameAr)}</div>
+                     <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-black bg-gray-100 border-2 border-gray-300">
+                        <QrCode size={20} />
+                     </div>
                      <div>
                         <h3 className="font-bold text-gray-800">{patient.nameAr}</h3>
                         <p className="text-xs text-gray-500">{patient.nationalId} | {patient.areaId}</p>

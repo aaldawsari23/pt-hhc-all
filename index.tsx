@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client';
 import AppWithAuth from './AppWithAuth';
 import TestApp from './TestApp';
 import ErrorBoundary from './ErrorBoundary';
+import './index.css';
+import './styles/mobile-improvements.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

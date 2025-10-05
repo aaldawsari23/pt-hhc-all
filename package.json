@@ -1,7 +1,8 @@
 {
-  "name": "copy-of-home-healthcare-hub",
+  "name": "kah-home-healthcare-system",
   "private": true,
-  "version": "0.0.0",
+  "version": "2.0.0",
+  "description": "King Abdullah Hospital - Bisha Home Healthcare Management System",
   "type": "module",
   "scripts": {
     "dev": "vite",

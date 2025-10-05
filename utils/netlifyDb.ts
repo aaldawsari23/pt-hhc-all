@@ -2,10 +2,22 @@ import { neon } from '@netlify/neon';
 import { PdfService, PdfFile, PdfTemplate } from './pdfService';
 
 // Get database connection from environment variable
-const DATABASE_URL = process.env.DATABASE_URL || 
+const DATABASE_URL = import.meta.env.VITE_DATABASE_URL || 
+  process.env.DATABASE_URL || 
   'postgresql://neondb_owner:npg_l1ihrQg7wRdv@ep-cold-feather-aecrkjj2-pooler.c-2.us-east-2.aws.neon.tech/neondb?channel_binding=require&sslmode=require';
 
-const sql = neon(DATABASE_URL);
+// Check if we're in a browser environment
+const isClient = typeof window !== 'undefined';
+
+// Initialize SQL client only in server environment
+let sql: any = null;
+try {
+  if (!isClient) {
+    sql = neon(DATABASE_URL);
+  }
+} catch (error) {
+  console.warn('Could not initialize Neon client:', error);
+}
 
 export interface Patient {
   nationalId: string;
@@ -134,6 +146,10 @@ export class NetlifyDbService {
 
   static async getAllPatients() {
     try {
+      if (!sql) {
+        throw new Error('Database client not available in browser environment');
+      }
+      
       const result = await sql`
         SELECT * FROM patients ORDER BY created_at DESC
       `;
@@ -241,6 +257,10 @@ export class NetlifyDbService {
 
   static async getAllStaff() {
     try {
+      if (!sql) {
+        throw new Error('Database client not available in browser environment');
+      }
+      
       const result = await sql`
         SELECT * FROM staff ORDER BY name_ar
       `;

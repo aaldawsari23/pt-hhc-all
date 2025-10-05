@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useMemo } from 'react';
 import { AppState, Action, Role, Patient, Staff, Visit, Team, Assessment } from '../types';
-import { processInitialData, getRiskLevel } from '../utils/helpers';
+import { getRiskLevel } from '../utils/helpers';
 import { DATA } from '../data';
 import { AuthService, FirestoreService, SyncService, StorageService } from '../utils/firebase';
 import { NetlifyDbService } from '../utils/netlifyDb';
@@ -17,13 +17,23 @@ interface FirebaseContextType {
   switchToFirebase: () => void;
 }
 
-const initialData = processInitialData();
+const initialData = DATA;
 
-const doctorStaff = initialData.staff.filter(s => s.المهنة === 'طبيب');
-const nurseStaff = initialData.staff.filter(s => s.المهنة === 'ممرض');
+const doctorStaff = (initialData.طاقم || []).filter(s => s.المهنة === 'طبيب');
+const nurseStaff = (initialData.طاقم || []).filter(s => s.المهنة === 'ممرض');
 
 const initialState: AppState = {
-  ...initialData,
+  patients: initialData.المرضى || [],
+  staff: initialData.طاقم || [],
+  areas: initialData.الأحياء || [],
+  criticalCases: initialData.حالات_حرجة || {
+    catheter: [],
+    pressureSore: [],
+    tubeFeeding: [],
+    fallRisk: [],
+    ivTherapy: [],
+    ventilation: [],
+  },
   filters: {
     search: '',
     areas: [],
@@ -35,10 +45,10 @@ const initialState: AppState = {
   currentRole: Role.Coordinator,
   visits: [],
   teams: [
-    { id: 'team1', name: 'Team 1', members: [doctorStaff[0], nurseStaff[0], nurseStaff[1]] },
-    { id: 'team2', name: 'Team 2', members: [doctorStaff[1], nurseStaff[2], nurseStaff[3]] },
-    { id: 'team3', name: 'Team 3', members: [doctorStaff[2], nurseStaff[4], nurseStaff[5]] },
-  ],
+    { id: 'team1', name: 'Team 1', members: [doctorStaff[0], nurseStaff[0], nurseStaff[1]].filter(Boolean) },
+    { id: 'team2', name: 'Team 2', members: [doctorStaff[1], nurseStaff[2], nurseStaff[3]].filter(Boolean) },
+    { id: 'team3', name: 'Team 3', members: [doctorStaff[2], nurseStaff[4], nurseStaff[5]].filter(Boolean) },
+  ].filter(team => team.members.length > 0),
   customLists: [],
 };
 

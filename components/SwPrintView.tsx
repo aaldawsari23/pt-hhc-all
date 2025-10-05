@@ -31,7 +31,7 @@ const SwPrintView: React.FC<Props> = ({ visit, patient }) => {
       <header className="flex items-center justify-between pb-4 border-b">
          <div>
             <h1 className="text-2xl font-bold text-gray-800">مذكرة تقييم اجتماعي</h1>
-            <p className="text-lg text-gray-600">مستشفى الملك عبدالله - بيشه</p>
+            <p className="text-lg text-gray-600">تجمع عسير الصحي – مستشفى الملك عبدالله ببيشة</p>\n            <p className="text-sm text-gray-500">الرعاية الصحية المنزلية</p>
           </div>
         <div className="text-right text-xs text-gray-500">
           <p><strong>التاريخ:</strong> {new Date(visit.date).toLocaleDateString()}</p>

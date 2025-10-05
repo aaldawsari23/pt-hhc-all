@@ -11,6 +11,8 @@ const Scheduler: React.FC = () => {
     const [viewMode, setViewMode] = useState<'month' | 'week' | 'day'>('month');
     const [popover, setPopover] = useState<{ x: number, y: number, visit: Visit } | null>(null);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [showBulkScheduler, setShowBulkScheduler] = useState(false);
+    const [selectedPatients, setSelectedPatients] = useState<string[]>([]);
 
     const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
@@ -72,8 +74,18 @@ const Scheduler: React.FC = () => {
                         </div>
                     </div>
                     
-                    {/* View Mode Switcher */}
+                    {/* Enhanced Controls */}
                     <div className="flex items-center gap-2">
+                        {/* جدولة جماعية للمرضى */}
+                        <button
+                            onClick={() => setShowBulkScheduler(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all duration-200 shadow-sm"
+                            title="جدولة زيارات جماعية | Bulk Schedule"
+                        >
+                            <Plus size={16} />
+                            <span className="hidden md:inline">جدولة جماعية</span>
+                        </button>
+                        
                         <div className="flex bg-white/20 rounded-xl p-1">
                             {(['month', 'week', 'day'] as const).map(mode => (
                                 <button
@@ -249,20 +261,21 @@ const Scheduler: React.FC = () => {
                                 <div className="flex gap-2 mt-4">
                                     <button
                                         onClick={() => {
-                                            // TODO: Open edit visit dialog
+                                            dispatch({ type: 'MARK_VISIT_COMPLETED', payload: { patientId: popover.visit.patientId, date: popover.visit.date } });
                                             setPopover(null);
                                         }}
-                                        className="flex-1 bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                                        className="flex-1 bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+                                        disabled={popover.visit.status === 'Completed'}
                                     >
                                         <Edit3 size={14} />
-                                        Edit
+                                        {popover.visit.status === 'Completed' ? 'مكتملة' : 'إكمال الزيارة'}
                                     </button>
                                     <button
                                         onClick={handleCancelVisit}
                                         className="flex-1 bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
                                     >
                                         <X size={14} />
-                                        Cancel
+                                        إلغاء الزيارة
                                     </button>
                                 </div>
                             </div>

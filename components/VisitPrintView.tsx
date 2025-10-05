@@ -22,10 +22,11 @@ const VisitPrintView: React.FC<Props> = ({ visit, patient }) => {
       {/* Header */}
       <header className="flex items-center justify-between pb-4 border-b">
         <div className="flex items-center gap-4">
-          <img src="https://i.imgur.com/8Q9Z3v1.png" alt="Logo" className="h-16 w-16 object-contain" />
+          <img src="/logo.png" alt="Aseer Health Cluster Logo" className="h-16 w-16 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Home Healthcare Visit Note</h1>
-            <p className="text-lg text-gray-600">مستشفى الملك عبدالله - بيشه</p>
+            <p className="text-lg text-gray-600">تجمع عسير الصحي – مستشفى الملك عبدالله ببيشة</p>
+            <p className="text-sm text-gray-500">الرعاية الصحية المنزلية</p>
           </div>
         </div>
         <div className="text-right text-xs text-gray-500">

@@ -1,4 +1,27 @@
-import React, { useState } from 'react';
+/**
+ * King Abdullah Hospital - Bisha
+ * Home Healthcare Management System
+ * 
+ * A comprehensive healthcare application for managing home healthcare services
+ * including patient management, team coordination, assessments, and documentation.
+ * 
+ * Features:
+ * - ✅ Enhanced Patient Cards with comprehensive medical information display
+ * - ✅ Centralized Assessment System with initial and follow-up forms
+ * - ✅ Smart Note Logic with prefilled values and auto-responses
+ * - ✅ Professional Print Templates with hospital branding
+ * - ✅ Mobile-First Responsive Design
+ * - ✅ Role-Based Access Control
+ * - ✅ Real-time Assessment Tracking
+ * - ✅ QR Code Integration
+ * - ✅ Multilingual Support (Arabic/English)
+ * 
+ * @version 2.0.0
+ * @author Healthcare IT Team
+ * @organization Aseer Health Cluster - King Abdullah Hospital, Bisha
+ */
+
+import React, { useState, useEffect } from 'react';
 import { HomeHealthcareProvider, useHomeHealthcare } from './context/HomeHealthcareContext';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
@@ -7,8 +30,10 @@ import TodayVisits from './components/TodayVisits';
 import Scheduler from './components/Scheduler';
 import DriverView from './components/DriverView';
 import Settings from './components/Settings';
+import MobileResponsiveUpdater from './components/MobileResponsiveUpdater';
 import { Role } from './types';
 import { Menu, X } from 'lucide-react';
+import { initializePerformanceOptimizations, measurePerformance } from './utils/performance';
 
 const AppContent: React.FC = () => {
     const { state } = useHomeHealthcare();
@@ -83,8 +108,23 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+    useEffect(() => {
+        const measure = measurePerformance('App Initialization');
+        
+        // Initialize performance optimizations
+        initializePerformanceOptimizations();
+        
+        // Log app startup completion
+        setTimeout(() => {
+            measure();
+            console.log('✅ Home Healthcare Management System loaded successfully');
+        }, 100);
+        
+    }, []);
+
     return (
         <HomeHealthcareProvider>
+            <MobileResponsiveUpdater />
             <AppContent />
         </HomeHealthcareProvider>
     );

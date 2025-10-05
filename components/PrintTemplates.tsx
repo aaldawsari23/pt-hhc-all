@@ -174,7 +174,8 @@ const VisitNotePrint: React.FC<{ patient: Patient; visit: Visit }> = ({ patient,
     {/* Footer */}
     <div className="print-footer mt-6 pt-4 border-t-2 border-gray-300 text-center text-xs text-gray-600">
       <p>This document was generated electronically and is valid without signature.</p>
-      <p>King Abdullah Hospital - Home Healthcare Division | Generated: {new Date().toLocaleString()}</p>
+      <p>Aseer Health Cluster – King Abdullah Hospital, Bishah - Home Healthcare Department | Generated: {new Date().toLocaleString()}</p>
+      <p>تجمع عسير الصحي – مستشفى الملك عبدالله ببيشة - الرعاية الصحية المنزلية</p>
     </div>
   </div>
 );
@@ -240,7 +241,8 @@ const AssessmentPrint: React.FC<{ patient: Patient; assessment: Assessment }> = 
 
       <div className="print-footer mt-6 pt-4 border-t-2 border-gray-300 text-center text-xs text-gray-600">
         <p>This assessment was completed electronically.</p>
-        <p>King Abdullah Hospital - Home Healthcare Division | Generated: {new Date().toLocaleString()}</p>
+        <p>Aseer Health Cluster – King Abdullah Hospital, Bishah - Home Healthcare Department | Generated: {new Date().toLocaleString()}</p>
+      <p>تجمع عسير الصحي – مستشفى الملك عبدالله ببيشة - الرعاية الصحية المنزلية</p>
       </div>
     </div>
   );
@@ -298,7 +300,8 @@ const ContactHistoryPrint: React.FC<{ patient: Patient }> = ({ patient }) => (
 
     <div className="print-footer mt-6 pt-4 border-t-2 border-gray-300 text-center text-xs text-gray-600">
       <p>Contact and visit history report</p>
-      <p>King Abdullah Hospital - Home Healthcare Division | Generated: {new Date().toLocaleString()}</p>
+      <p>Aseer Health Cluster – King Abdullah Hospital, Bishah - Home Healthcare Department | Generated: {new Date().toLocaleString()}</p>
+      <p>تجمع عسير الصحي – مستشفى الملك عبدالله ببيشة - الرعاية الصحية المنزلية</p>
     </div>
   </div>
 );
@@ -309,7 +312,7 @@ const DriverRoutePrint: React.FC<{ patients: Patient[]; date: string }> = ({ pat
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold">Driver Route Sheet</h1>
-          <p className="text-blue-100">King Abdullah Hospital - Bisha</p>
+          <p className="text-blue-100">Aseer Health Cluster \u2013 King Abdullah Hospital, Bishah</p>
         </div>
         <div className="text-right">
           <p className="text-sm text-blue-100">Route Date</p>
@@ -359,7 +362,8 @@ const DriverRoutePrint: React.FC<{ patients: Patient[]; date: string }> = ({ pat
 
     <div className="print-footer mt-6 pt-4 border-t-2 border-gray-300 text-center text-xs text-gray-600">
       <p>Driver route optimized by proximity and area</p>
-      <p>King Abdullah Hospital - Home Healthcare Division | Generated: {new Date().toLocaleString()}</p>
+      <p>Aseer Health Cluster – King Abdullah Hospital, Bishah - Home Healthcare Department | Generated: {new Date().toLocaleString()}</p>
+      <p>تجمع عسير الصحي – مستشفى الملك عبدالله ببيشة - الرعاية الصحية المنزلية</p>
     </div>
   </div>
 );

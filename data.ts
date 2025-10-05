@@ -148,7 +148,7 @@ export const DATA = {
       "bradenScore": 13,
       "minMonthlyRequired": 1,
       "admissionDate": "2023-03-29",
-      "gmapsUrl": false
+      "gmapsUrl": true
     },
     {
       "nationalId": "1004527469",
@@ -317,6 +317,31 @@ export const DATA = {
       "minMonthlyRequired": 1,
       "admissionDate": "2019-01-30",
       "gmapsUrl": false
+    },
+    {
+      "nationalId": "2094995634",
+      "nameAr": "عبدالكريم محمد مرضي الدوسري",
+      "phone": "0583224558",
+      "areaId": "المدراء",
+      "status": "active",
+      "level": "3",
+      "bradenScore": 15,
+      "minMonthlyRequired": 2,
+      "admissionDate": "2024-09-15",
+      "gmapsUrl": true,
+      "sex": "Male",
+      "hasCatheter": true,
+      "wounds": {
+        "presentCount": 1,
+        "healedCount": 0
+      },
+      "fallHighRisk": false,
+      "ivTherapy": true,
+      "ngTube": false,
+      "gTube": false,
+      "ventSupport": false,
+      "tags": ["Demo Patient", "PT Candidate", "High Priority"],
+      "lastVisit": "2024-10-01"
     }
   ],
   "حالات_حرجة": {

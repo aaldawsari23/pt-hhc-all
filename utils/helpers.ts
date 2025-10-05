@@ -1,5 +1,4 @@
 import { Patient, Role } from '../types';
-import { DATA } from '../data';
 
 export const getRiskLevel = (dateString: string | null): { level: 'red' | 'yellow' | 'green' | 'gray'; label: string } => {
     if (!dateString) return { level: 'gray', label: 'No Data' };
@@ -27,38 +26,8 @@ export const getInitials = (name: string) => {
 };
 
 
-export const processInitialData = () => {
-  const allPatients = DATA.المرضى.map((p, index) => {
-    const tags: string[] = [];
-    if (DATA.حالات_حرجة.مرضى_القساطر.some(cp => cp.nationalId === p.nationalId)) tags.push('Catheter');
-    if (DATA.حالات_حرجة.مرضى_قرح_الفراش.some(cp => cp.nationalId === p.nationalId)) tags.push('Pressure Ulcer');
-    if (DATA.حالات_حرجة.مرضى_التغذية_الأنبوبية.some(cp => cp.nationalId === p.nationalId)) tags.push('Tube Feeding');
-    if (DATA.حالات_حرجة.مرضى_خطر_السقوط.some(cp => cp.nationalId === p.nationalId)) tags.push('Fall Risk');
-    if (DATA.حالات_حرجة.مرضى_العلاج_الوريدي.some(cp => cp.nationalId === p.nationalId)) tags.push('IV Therapy');
-    if (DATA.حالات_حرجة.مرضى_التهوية.some(cp => cp.nationalId === p.nationalId)) tags.push('Ventilation');
-    
-    // Simulate some missing data for realism
-    // FIX: Explicitly type `sex` to ensure it is not widened to a generic `string` type.
-    const sex: 'Male' | 'Female' = index % 3 === 0 ? 'Female' : 'Male';
-
-    // FIX: Cast status to the correct literal type to match the Patient interface.
-    return { ...p, tags, sex, status: p.status as 'active' | 'deceased', assessments: [], contactAttempts: [] };
-  });
-
-  return {
-    patients: allPatients,
-    staff: DATA.طاقم,
-    areas: DATA.الأحياء,
-    criticalCases: {
-      catheter: DATA.حالات_حرجة.مرضى_القساطر,
-      pressureSore: DATA.حالات_حرجة.مرضى_قرح_الفراش,
-      tubeFeeding: DATA.حالات_حرجة.مرضى_التغذية_الأنبوبية,
-      fallRisk: DATA.حالات_حرجة.مرضى_خطر_السقوط,
-      ivTherapy: DATA.حالات_حرجة.مرضى_العلاج_الوريدي,
-      ventilation: DATA.حالات_حرجة.مرضى_التهوية,
-    }
-  };
-};
+// This function has been moved to src/services/dataSource.ts
+// and is no longer needed here since data loading is now centralized
 
 export const getRoleBasedStaff = (staff: any[], role: Role) => {
   const roleMapping: { [key in Role]?: string[] } = {
