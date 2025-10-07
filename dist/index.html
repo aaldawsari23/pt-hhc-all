@@ -1,13 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    
+    <!-- Progressive Web App Meta Tags -->
     <meta name="theme-color" content="#1d4ed8" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Home Healthcare" />
-    <title>Home Healthcare Hub - King Abdullah Hospital</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="الرعاية الصحية المنزلية" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- SEO and Description -->
+    <title>نظام الرعاية الصحية المنزلية - مستشفى الملك عبدالله ببيشة | Home Healthcare Management System</title>
+    <meta name="description" content="نظام إدارة الرعاية الصحية المنزلية - مستشفى الملك عبدالله ببيشة. Healthcare management system for home care services." />
+    <meta name="keywords" content="healthcare, رعاية صحية, home care, منزلية, بيشة, مستشفى الملك عبدالله" />
+    <meta name="author" content="Aseer Health Cluster - King Abdullah Hospital, Bisha" />
+    
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    
+    <!-- Accessibility -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    
+    <!-- Healthcare Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HealthcareOrganization",
+      "name": "King Abdullah Hospital - Bisha Home Healthcare",
+      "alternateName": "مستشفى الملك عبدالله ببيشة - الرعاية الصحية المنزلية",
+      "url": "https://kahbisha.health.sa",
+      "logo": "/logo.png",
+      "description": "Home Healthcare Management System for comprehensive patient care",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "SA",
+        "addressRegion": "Aseer",
+        "addressLocality": "Bisha"
+      }
+    }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
 
   <script type="importmap">
@@ -21,10 +56,13 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/assets/index-B99yvjmk.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/vendor-BP0qhIbX.js">
-  <link rel="modulepreload" crossorigin href="/assets/ui-DrlliSgO.js">
-  <link rel="stylesheet" crossorigin href="/assets/style-CY6-J9ln.css">
+  <script type="module" crossorigin src="/assets/index-tCj7mqOm.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/libs-DnC4bF5A.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-BGAm2JFI.js">
+  <link rel="modulepreload" crossorigin href="/assets/core-CNLpyEEB.js">
+  <link rel="modulepreload" crossorigin href="/assets/forms-FxYF851u.js">
+  <link rel="modulepreload" crossorigin href="/assets/print-D5Sx_sRd.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-C4ELSJQd.css">
 </head>
   <body class="bg-slate-50">
     <div id="root"></div>

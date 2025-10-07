@@ -41,7 +41,6 @@ const ViewSwitcher: React.FC<HeaderProps> = ({ activeView, setActiveView }) => {
     const views = [
         { id: 'patients', label: 'Patients', icon: <Users size={16} /> },
         { id: 'visits', label: 'Today\'s Visits', icon: <Briefcase size={16} /> },
-        { id: 'scheduler', label: 'Scheduler', icon: <Calendar size={16} /> },
         { id: 'settings', label: 'Settings', icon: <Settings size={16} /> },
     ];
 
@@ -82,9 +81,9 @@ const Header: React.FC<HeaderProps> = ({ activeView, setActiveView }) => {
     ];
 
     return (
-        <header className="bg-gradient-to-r from-blue-700 to-blue-600 border-b border-blue-800 p-3 md:p-4 flex flex-col lg:flex-row items-center justify-between gap-3 md:gap-4 sticky top-0 z-50 shadow-lg">
-            <div className="flex items-center gap-2 md:gap-3 w-full lg:w-auto justify-center lg:justify-start">
-                 <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-md p-1">
+        <header className="mobile-nav bg-gradient-to-r from-blue-700 to-blue-600 border-b border-blue-800 safe-area-inset-top flex flex-col lg:flex-row items-center justify-between gap-3 md:gap-4 sticky top-0 z-50 shadow-lg">
+            <div className="flex items-center gap-2 md:gap-3 w-full lg:w-auto justify-center lg:justify-start px-3 md:px-4 py-2">
+                 <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full flex items-center justify-center shadow-md p-1 flex-shrink-0">
                     <img 
                         src="/logo.png" 
                         alt="Aseer Health Cluster Logo" 

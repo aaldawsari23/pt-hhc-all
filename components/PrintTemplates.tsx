@@ -68,7 +68,7 @@ const PatientInfo: React.FC<{ patient: Patient }> = ({ patient }) => (
         <p className="font-bold">{patient.bradenScore || 'N/A'}</p>
       </div>
     </div>
-    {patient.tags.length > 0 && (
+    {patient.tags?.length > 0 && (
       <div className="mt-3">
         <span className="font-semibold text-gray-600">Tags:</span>
         <div className="flex flex-wrap gap-2 mt-1">
@@ -129,7 +129,7 @@ const VisitNotePrint: React.FC<{ patient: Patient; visit: Visit }> = ({ patient,
               <p><strong>Status:</strong> {visit.nurseNote.status}</p>
               {visit.nurseNote.woundDelta && <p><strong>Wound Status:</strong> {visit.nurseNote.woundDelta}</p>}
               {visit.nurseNote.deviceDelta && <p><strong>Device Status:</strong> {visit.nurseNote.deviceDelta}</p>}
-              {visit.nurseNote.tasks.length > 0 && (
+              {visit.nurseNote.tasks?.length > 0 && (
                 <p><strong>Tasks Completed:</strong> {visit.nurseNote.tasks.join(', ')}</p>
               )}
               {visit.nurseNote.escalation && <p><strong>Escalation:</strong> {visit.nurseNote.escalation}</p>}
@@ -151,11 +151,11 @@ const VisitNotePrint: React.FC<{ patient: Patient; visit: Visit }> = ({ patient,
               <p><strong>Status:</strong> {visit.doctorNote.status}</p>
               <p><strong>Response to Plan:</strong> {visit.doctorNote.responseToPlan}</p>
               <p><strong>Adherence:</strong> {visit.doctorNote.adherence}</p>
-              {visit.doctorNote.newIssues && visit.doctorNote.newIssues.length > 0 && (
+              {visit.doctorNote.newIssues && visit.doctorNote.newIssues?.length > 0 && (
                 <p><strong>New Issues:</strong> {visit.doctorNote.newIssues.join(', ')}</p>
               )}
               <p><strong>Plan:</strong> {visit.doctorNote.plan}</p>
-              {visit.doctorNote.planDetails && visit.doctorNote.planDetails.length > 0 && (
+              {visit.doctorNote.planDetails && visit.doctorNote.planDetails?.length > 0 && (
                 <p><strong>Plan Details:</strong> {visit.doctorNote.planDetails.join(', ')}</p>
               )}
               <p><strong>Next Follow-up:</strong> {visit.doctorNote.nextFollowUp}</p>
@@ -191,7 +191,7 @@ const AssessmentPrint: React.FC<{ patient: Patient; assessment: Assessment }> = 
               <h4 className="font-bold text-gray-800 mb-2">Chief Focus</h4>
               <p className="text-sm">{doctorData.chiefFocus.join(', ') || 'None specified'}</p>
             </div>
-            {doctorData.redFlags && doctorData.redFlags.length > 0 && (
+            {doctorData.redFlags && doctorData.redFlags?.length > 0 && (
               <div>
                 <h4 className="font-bold text-red-600 mb-2">Red Flags</h4>
                 <p className="text-sm text-red-700">{doctorData.redFlags.join(', ')}</p>

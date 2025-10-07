@@ -14,7 +14,6 @@ import {
   CheckCircle,
   Loader
 } from 'lucide-react';
-import { NetlifyDbService } from '../utils/netlifyDb';
 import { PdfService, PdfFile } from '../utils/pdfService';
 import { useFirebase } from '../context/FirebaseContext';
 

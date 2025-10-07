@@ -180,17 +180,17 @@ const UnifiedVisitNotesPage: React.FC<UnifiedVisitNotesPageProps> = ({
                         </div>
                       </div>
                       
-                      {(noteData as DoctorFollowUpData).newIssues && (noteData as DoctorFollowUpData).newIssues!.length > 0 && (
+                      {(noteData as DoctorFollowUpData).newIssues && (noteData as DoctorFollowUpData).newIssues?.length > 0 && (
                         <div className="bg-red-50 rounded-lg p-3 border border-red-200">
                           <span className="font-medium text-red-800 block mb-1">New Issues:</span>
-                          <p className="text-red-700 text-sm">{(noteData as DoctorFollowUpData).newIssues!.join(', ')}</p>
+                          <p className="text-red-700 text-sm">{(noteData as DoctorFollowUpData).newIssues.join(', ')}</p>
                         </div>
                       )}
                       
-                      {(noteData as DoctorFollowUpData).planDetails && (noteData as DoctorFollowUpData).planDetails!.length > 0 && (
+                      {(noteData as DoctorFollowUpData).planDetails && (noteData as DoctorFollowUpData).planDetails?.length > 0 && (
                         <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
                           <span className="font-medium text-blue-800 block mb-1">Plan Details:</span>
-                          <p className="text-blue-700 text-sm">{(noteData as DoctorFollowUpData).planDetails!.join(', ')}</p>
+                          <p className="text-blue-700 text-sm">{(noteData as DoctorFollowUpData).planDetails.join(', ')}</p>
                         </div>
                       )}
                       
@@ -241,7 +241,7 @@ const UnifiedVisitNotesPage: React.FC<UnifiedVisitNotesPageProps> = ({
                         </div>
                       )}
                       
-                      {(noteData as NurseFollowUpData).tasks && (noteData as NurseFollowUpData).tasks.length > 0 && (
+                      {(noteData as NurseFollowUpData).tasks && (noteData as NurseFollowUpData).tasks?.length > 0 && (
                         <div>
                           <span className="font-medium text-gray-700 block mb-1">Tasks Completed:</span>
                           <p className="text-gray-600">{(noteData as NurseFollowUpData).tasks.join(', ')}</p>

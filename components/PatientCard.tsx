@@ -5,7 +5,6 @@ import { getRiskLevel, riskLevelToColor, getInitials } from '../utils/helpers';
 import { Phone, PhoneOff, MapPin, Hash, QrCode, ClipboardList, Stethoscope, HandHeart, Accessibility, HeartPulse, FileText, Printer, History, Calendar, User, Shield, Thermometer, HeartHandshake, Activity, Plus } from 'lucide-react';
 import UnifiedFormHeader from './UnifiedFormHeader';
 import SmartAssessmentSelector from './SmartAssessmentSelector';
-import { NetlifyDbService } from '../utils/netlifyDb';
 import DoctorAssessmentForm from './forms/doctor/DoctorAssessmentForm';
 import NurseAssessmentForm from './forms/nurse/NurseAssessmentForm';
 import PtAssessmentForm from './forms/pt/PtAssessmentForm';
@@ -50,10 +49,6 @@ const PatientCard: React.FC<{ patient: Patient }> = memo(({ patient }) => {
         showEnhancedContactManager: false,
         selectedAssessmentForPrint: null as Assessment | null
     });
-    
-    // إضافة متغيرات الحالة المفقودة
-    const [showHistory, setShowHistory] = useState(false);
-    const [generatingPdf, setGeneratingPdf] = useState(false);
     const isSelected = state.selectedPatientIds.has(patient.nationalId);
     
     // Simplified for demo - no Firebase dependencies
@@ -96,43 +91,26 @@ const PatientCard: React.FC<{ patient: Patient }> = memo(({ patient }) => {
 
 
     const handleGeneratePatientCard = async () => {
-        if (!useNetlifyDb) {
-            alert('PDF generation is only available with Netlify DB. Please switch to Netlify DB in Settings.');
-            return;
-        }
-
         try {
-            setGeneratingPdf(true);
-            const result = await NetlifyDbService.generatePatientCard(
-                patient.nationalId, 
-                currentUser?.name || 'النظام'
-            );
+            setModalState(prev => ({ ...prev, generatingPdf: true }));
+            // Use browser print functionality instead of Netlify service
+            setModalState(prev => ({ ...prev, showPrintCard: true }));
             
-            if (result.success && result.pdfContent) {
-                // Download the generated PDF
-                const blob = new Blob([result.pdfContent], { type: 'application/pdf' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = result.filename || `patient_card_${patient.nationalId}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                alert('تم إنشاء بطاقة المريض بنجاح');
-            }
+            // Small delay to ensure modal renders before printing
+            setTimeout(() => {
+                window.print();
+                setModalState(prev => ({ ...prev, showPrintCard: false, generatingPdf: false }));
+            }, 500);
         } catch (error) {
-            console.error('Error generating patient card:', error);
-            alert('فشل في إنشاء بطاقة المريض');
-        } finally {
-            setGeneratingPdf(false);
+            console.error('Print error:', error);
+            alert('خطأ في الطباعة: ' + (error instanceof Error ? error.message : 'خطأ غير معروف'));
+            setModalState(prev => ({ ...prev, generatingPdf: false }));
         }
     };
 
     return (
         <>
-            <div className={`bg-white rounded-2xl shadow-lg border-2 ${isSelected ? 'border-blue-500 ring-4 ring-blue-200/50 shadow-blue-100 transform scale-[1.02]' : 'border-gray-100 hover:border-blue-200'} transition-all duration-300 flex flex-col hover:shadow-xl transform hover:scale-[1.01] gpu-accelerated`}>
+            <div className={`mobile-card ${isSelected ? 'border-blue-500 ring-4 ring-blue-200/50 shadow-blue-100 transform scale-[1.02]' : 'border-gray-100 hover:border-blue-200'} transition-all duration-300 flex flex-col hover:shadow-xl transform hover:scale-[1.01] gpu-accelerated`}>
             <div className="p-4 md:p-5 flex-grow">
                 <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -297,7 +275,7 @@ const PatientCard: React.FC<{ patient: Patient }> = memo(({ patient }) => {
                     )}
                     
                     {/* العلامات الإضافية */}
-                    {patient.tags.length > 0 && (
+                    {patient.tags && patient.tags.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                             {patient.tags.map(tag => <Tag key={tag} label={tag} />)}
                         </div>

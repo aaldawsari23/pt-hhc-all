@@ -1,9 +1,78 @@
 import React, { createContext, useReducer, useContext, useMemo, useEffect, useState, useCallback } from 'react';
 import { AppState, Action, Role, Patient, Staff, Visit, Team, DoctorFollowUpData, NurseFollowUpData, PtFollowUpData, SwFollowUpData, ContactAttempt, CustomList } from '../types';
 import { getRiskLevel } from '../utils/helpers';
-import { loadPatients, LoadedData } from '../services/dataSource';
+
+// Define the LoadedData interface
+interface LoadedData {
+    patients: Patient[];
+    staff: Staff[];
+    areas: string[];
+    criticalCases: {
+        catheter: Partial<Patient>[];
+        pressureSore: Partial<Patient>[];
+        tubeFeeding: Partial<Patient>[];
+        fallRisk: Partial<Patient>[];
+        ivTherapy: Partial<Patient>[];
+        ventilation: Partial<Patient>[];
+    };
+}
 
 let initialData: LoadedData | null = null;
+
+// Define the loadPatients function
+async function loadPatients(): Promise<LoadedData> {
+    try {
+        // Try to load from the public JSON file
+        const response = await fetch('/homecare_db_bundle_ar.v3.json');
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Validate and structure the data
+            const patients: Patient[] = (data.المرضى || []).map((p: any) => ({
+                ...p,
+                tags: p.tags || [],
+                assessments: p.assessments || [],
+                contactAttempts: p.contactAttempts || []
+            }));
+            const staff: Staff[] = data.طاقم || [];
+            const areas: string[] = data.الأحياء || [];
+            
+            // Calculate critical cases from patients
+            const criticalCases = {
+                catheter: patients.filter(p => p.hasCatheter),
+                pressureSore: patients.filter(p => p.wounds?.presentCount && p.wounds.presentCount > 0),
+                tubeFeeding: patients.filter(p => p.ngTube || p.gTube),
+                fallRisk: patients.filter(p => p.fallHighRisk),
+                ivTherapy: patients.filter(p => p.ivTherapy),
+                ventilation: patients.filter(p => p.ventSupport),
+            };
+            
+            return {
+                patients,
+                staff,
+                areas,
+                criticalCases
+            };
+        }
+    } catch (error) {
+        console.warn('Failed to load data from JSON file:', error);
+    }
+    
+    // Return empty data structure as fallback
+    return {
+        patients: [],
+        staff: [],
+        areas: [],
+        criticalCases: {
+            catheter: [],
+            pressureSore: [],
+            tubeFeeding: [],
+            fallRisk: [],
+            ivTherapy: [],
+            ventilation: [],
+        }
+    };
+}
 
 const getInitialState = (data: LoadedData | null): AppState => {
     if (!data) {
@@ -161,7 +230,13 @@ const reducer = (state: AppState, action: Action): AppState => {
                         if(assessment.role === Role.Nurse && 'bradenScore' in assessment && assessment.bradenScore) {
                            newBraden = parseInt(String(assessment.bradenScore), 10);
                         }
-                        return { ...p, assessments: updatedAssessments, bradenScore: newBraden || p.bradenScore };
+                        return { 
+                            ...p, 
+                            assessments: updatedAssessments, 
+                            bradenScore: newBraden || p.bradenScore,
+                            tags: p.tags || [],
+                            contactAttempts: p.contactAttempts || []
+                        };
                     }
                     return p;
                 }),
@@ -242,10 +317,14 @@ const HomeHealthcareContext = createContext<{
   dispatch: React.Dispatch<Action>;
   filteredPatients: Patient[];
   actions: ContextActions;
+  loading: boolean;
+  error: string | null;
 } | undefined>(undefined);
 
 export const HomeHealthcareProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [dataLoaded, setDataLoaded] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [state, dispatch] = useReducer(reducer, getInitialState(null));
 
     // Action functions
@@ -290,7 +369,10 @@ export const HomeHealthcareProvider: React.FC<{ children: React.ReactNode }> = (
     useEffect(() => {
         const loadData = async () => {
             try {
+                setLoading(true);
+                setError(null);
                 console.log('🔄 Starting to load patient data...');
+                
                 const data = await loadPatients();
                 
                 // Validate loaded data
@@ -308,14 +390,17 @@ export const HomeHealthcareProvider: React.FC<{ children: React.ReactNode }> = (
                 const newState = getInitialState(data);
                 dispatch({ type: 'IMPORT_STATE', payload: newState });
                 setDataLoaded(true);
+                setLoading(false);
                 console.log('✅ HomeHealthcare context initialized successfully');
             } catch (error) {
                 console.error('❌ Failed to load patient data:', error);
+                setError(error instanceof Error ? error.message : 'Unknown error occurred');
                 
                 // Load empty state as fallback
                 const fallbackState = getInitialState(null);
                 dispatch({ type: 'IMPORT_STATE', payload: fallbackState });
                 setDataLoaded(true);
+                setLoading(false);
                 
                 console.warn('⚠️ Using empty state as fallback');
             }
@@ -347,7 +432,7 @@ export const HomeHealthcareProvider: React.FC<{ children: React.ReactNode }> = (
             const searchMatch = search === '' || nameMatch || idMatch;
 
             const areaMatch = areas.length === 0 || (p.areaId && areas.includes(p.areaId));
-            const tagMatch = tags.length === 0 || tags.every(tag => p.tags.includes(tag));
+            const tagMatch = tags.length === 0 || tags.every(tag => p.tags?.includes(tag));
             const sexMatch = sex.length === 0 || (p.sex && sex.includes(p.sex));
             const riskMatch = risk.length === 0 || risk.includes(riskLevel);
 
@@ -356,7 +441,7 @@ export const HomeHealthcareProvider: React.FC<{ children: React.ReactNode }> = (
     }, [state.patients, state.filters]);
 
     return (
-        <HomeHealthcareContext.Provider value={{ state, dispatch, filteredPatients, actions }}>
+        <HomeHealthcareContext.Provider value={{ state, dispatch, filteredPatients, actions, loading, error }}>
             {children}
         </HomeHealthcareContext.Provider>
     );

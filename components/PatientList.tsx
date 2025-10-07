@@ -92,9 +92,11 @@ const PatientList: React.FC = memo(() => {
                 )}
             </div>
             
-            <div className="mobile-grid gap-4 md:gap-6">
+            <div className="mobile-grid gap-4 md:gap-6 virtualized-list">
                 {visiblePatients.map((patient) => (
-                    <PatientCard key={patient.nationalId} patient={patient} />
+                    <div key={patient.nationalId} className="list-item">
+                        <PatientCard patient={patient} />
+                    </div>
                 ))}
             </div>
             
