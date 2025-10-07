@@ -210,9 +210,9 @@ export interface Patient {
   ventSupport?: boolean;
   lastVisit?: string;
   sex?: 'Male' | 'Female';
-  tags: string[];
-  assessments: Assessment[];
-  contactAttempts: ContactAttempt[];
+  tags?: string[];
+  assessments?: Assessment[];
+  contactAttempts?: ContactAttempt[];
 }
 
 export interface Team {

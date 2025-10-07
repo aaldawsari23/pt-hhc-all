@@ -4,7 +4,7 @@
  */
 
 export interface SmartFormData {
-  dataSource: string[];
+  dataSource?: string[];
   maritalStatus: string;
   wivesCount: number;
   educationLevel: string;
@@ -13,20 +13,20 @@ export interface SmartFormData {
   housingType: string;
   housingOwnership: string;
   housingCondition: number;
-  incomeSources: string[];
+  incomeSources?: string[];
   incomeAmount: string;
-  familyMembers: Array<{
+  familyMembers?: Array<{
     relation: string;
     relationBeforeIllness: string;
     relationAfterIllness: string;
   }>;
-  psychologicalImpact: string[];
-  physicalStatus: string[];
+  psychologicalImpact?: string[];
+  physicalStatus?: string[];
   assessmentSpeech: string;
   assessmentSight: string;
   assessmentHearing: string;
   assessmentMovement: string;
-  equipmentNeeds: string[];
+  equipmentNeeds?: string[];
   interventionSummary: string;
   educationStatus: string;
 }
@@ -42,7 +42,7 @@ export class SmartNarrativeGenerator {
       narrative += `. تتكون أسرته من ${formData.wivesCount} زوجات`;
     }
     
-    if (formData.familyMembers.length > 0) {
+    if (formData.familyMembers?.length > 0) {
       narrative += `. **تكوين الأسرة:** تشمل الأسرة ${formData.familyMembers.length} أفراد من الأقارب المباشرين`;
       
       const relationshipChanges = formData.familyMembers.filter(member => 
@@ -148,7 +148,7 @@ export class SmartNarrativeGenerator {
   }
 
   static generateIncomeNarrative(formData: SmartFormData): string {
-    if (formData.incomeSources.length === 0) return '';
+    if (formData.incomeSources?.length === 0) return '';
     
     let narrative = '**الوضع المادي:** ';
     
@@ -197,7 +197,7 @@ export class SmartNarrativeGenerator {
   }
 
   static generatePsychologicalNarrative(formData: SmartFormData): string {
-    if (formData.psychologicalImpact.length === 0) {
+    if (formData.psychologicalImpact?.length === 0) {
       return '**الحالة النفسية:** لم تُلاحظ أي علامات واضحة للاضطراب النفسي الحاد، ويبدو المريض متقبلاً لوضعه الصحي في الوقت الحالي. يُنصح بالمتابعة الدورية للحالة النفسية.';
     }
     
@@ -253,7 +253,7 @@ export class SmartNarrativeGenerator {
   }
 
   static generatePhysicalNarrative(formData: SmartFormData): string {
-    if (formData.physicalStatus.length === 0) return '';
+    if (formData.physicalStatus?.length === 0) return '';
     
     const statusMap: Record<string, { description: string; implications: string }> = {
       'محدود القدرات': { 
@@ -380,7 +380,7 @@ export class SmartNarrativeGenerator {
   }
 
   static generateEquipmentNarrative(formData: SmartFormData): string {
-    if (formData.equipmentNeeds.length === 0) return '';
+    if (formData.equipmentNeeds?.length === 0) return '';
     
     const equipmentMap: Record<string, { description: string; priority: 'high' | 'medium' | 'low'; rationale: string }> = {
       'سرير طبي': { 
@@ -491,11 +491,11 @@ export class SmartNarrativeGenerator {
         educationTopics.push('العناية بالقسطرة البولية والوقاية من العدوى');
       }
       
-      if (formData.equipmentNeeds.length > 0) {
+      if (formData.equipmentNeeds?.length > 0) {
         educationTopics.push('الاستخدام الآمن والصحيح للأجهزة الطبية المنزلية');
       }
       
-      if (formData.psychologicalImpact.length > 0) {
+      if (formData.psychologicalImpact?.length > 0) {
         educationTopics.push('التعامل مع الضغوط النفسية وطرق الدعم العاطفي');
       }
       
@@ -548,7 +548,7 @@ export class SmartNarrativeGenerator {
     const severeSymptoms = ['يأس', 'عنف أو عدوانية', 'إنكار المرض', 'رهاب أو وسواس'];
     if (formData.psychologicalImpact.some(symptom => severeSymptoms.includes(symptom))) {
       recommendations.push('إحالة فورية وعاجلة للطبيب النفسي المختص مع متابعة مكثفة للحالة النفسية');
-    } else if (formData.psychologicalImpact.length > 0) {
+    } else if (formData.psychologicalImpact?.length > 0) {
       recommendations.push('متابعة دورية للحالة النفسية مع تقديم الدعم النفسي والاجتماعي المستمر');
     }
     
@@ -562,7 +562,7 @@ export class SmartNarrativeGenerator {
     }
     
     // Equipment recommendations
-    if (formData.equipmentNeeds.length > 0) {
+    if (formData.equipmentNeeds?.length > 0) {
       recommendations.push('متابعة حثيثة لتوفير جميع الأجهزة الطبية المطلوبة مع التدريب على الاستخدام الآمن');
     }
     

@@ -6,7 +6,6 @@ import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import PatientList from './components/PatientList';
 import TodayVisits from './components/TodayVisits';
-import Scheduler from './components/Scheduler';
 import DriverView from './components/DriverView';
 import Settings from './components/Settings';
 import { Role } from './types';
@@ -125,7 +124,6 @@ const AppContent: React.FC<AppContentProps> = ({ currentUser }) => {
           <div className="animate-fade-in">
             {activeView === 'patients' && <PatientList />}
             {activeView === 'visits' && <TodayVisits />}
-            {activeView === 'scheduler' && <Scheduler />}
             {activeView === 'settings' && <Settings />}
           </div>
         </div>

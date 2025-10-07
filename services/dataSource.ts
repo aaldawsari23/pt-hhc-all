@@ -1,4 +1,5 @@
-import { NetlifyDbService } from '../utils/netlifyDb';
+import { migrateToV3 } from '../src/data/local/migrateToV3';
+import { repo } from '../src/data/local/repo';
 
 export interface LoadedData {
   patients: any[];
@@ -20,6 +21,9 @@ let cacheTimestamp: number = 0;
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export const loadPatients = async (): Promise<LoadedData> => {
+  // Initialize or migrate database first
+  await migrateToV3();
+  
   // Return cached data if still valid
   const now = Date.now();
   if (dataCache && (now - cacheTimestamp) < CACHE_DURATION) {
@@ -27,26 +31,31 @@ export const loadPatients = async (): Promise<LoadedData> => {
   }
 
   try {
-    // Skip Netlify DB in browser environment
-    if (typeof window !== 'undefined') {
-      console.log('Browser detected, skipping Netlify DB and using JSON fallback');
-      throw new Error('Skipping Netlify DB in browser');
-    }
+    // Primary: Try IndexedDB first
+    console.log('Attempting to load data from IndexedDB...');
+    const patients = await repo.listPatients();
     
-    // Primary: Try Netlify DB first (server-side only)
-    console.log('Attempting to load data from Netlify DB...');
-    const patients = await NetlifyDbService.getAllPatients();
-    const staff = await NetlifyDbService.getAllStaff();
-    
-    if (patients.length > 0 && staff.length > 0) {
-      console.log('Successfully loaded data from Netlify DB');
-      const processedData = processNetlifyData(patients, staff);
+    if (patients.length > 0) {
+      console.log('Successfully loaded data from IndexedDB');
+      const processedData = {
+        patients,
+        staff: [], // TODO: load from rolesDirectory
+        areas: [],
+        criticalCases: {
+          catheter: [],
+          pressureSore: [],
+          tubeFeeding: [],
+          fallRisk: [],
+          ivTherapy: [],
+          ventilation: [],
+        }
+      };
       dataCache = processedData;
       cacheTimestamp = now;
       return processedData;
     }
   } catch (error) {
-    console.warn('Netlify DB failed, falling back to JSON bundle:', error);
+    console.warn('IndexedDB failed, falling back to JSON bundle:', error);
   }
 
   // Fallback: Load from JSON bundle

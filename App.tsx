@@ -22,88 +22,23 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { HomeHealthcareProvider, useHomeHealthcare } from './context/HomeHealthcareContext';
-import Header from './components/Header';
-import Sidebar from './components/Sidebar';
-import PatientList from './components/PatientList';
-import TodayVisits from './components/TodayVisits';
-import Scheduler from './components/Scheduler';
-import DriverView from './components/DriverView';
-import Settings from './components/Settings';
+import { HomeHealthcareProvider } from './context/HomeHealthcareContext';
+import MobileFirstLayout from './components/MobileFirstLayout';
+import AccessibilityEnhancer from './components/AccessibilityEnhancer';
 import MobileResponsiveUpdater from './components/MobileResponsiveUpdater';
-import { Role } from './types';
-import { Menu, X } from 'lucide-react';
+import PerformanceMonitor from './components/PerformanceMonitor';
+import ErrorBoundary from './ErrorBoundary';
 import { initializePerformanceOptimizations, measurePerformance } from './utils/performance';
+import { validateProduction, logValidationReport } from './utils/productionValidation';
 
 const AppContent: React.FC = () => {
-    const { state } = useHomeHealthcare();
     const [activeView, setActiveView] = useState('patients');
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-
-    if (state.currentRole === Role.Driver) {
-        return (
-            <div className="flex h-screen bg-gradient-to-br from-blue-50 to-indigo-50 font-sans text-gray-800" dir="ltr">
-                <main className="flex-1 flex flex-col overflow-hidden">
-                    <Header activeView={activeView} setActiveView={setActiveView} />
-                    <div className="flex-1 overflow-y-auto p-3 md:p-4 lg:p-6 mobile-spacing">
-                        <div className="animate-fade-in">
-                            <DriverView />
-                        </div>
-                    </div>
-                </main>
-            </div>
-        );
-    }
 
     return (
-        <div className="flex h-screen bg-gradient-to-br from-blue-50 to-indigo-50 font-sans text-gray-800" dir="ltr">
-            {/* Mobile Sidebar Overlay */}
-            {sidebarOpen && (
-                <div className="fixed inset-0 z-40 lg:hidden">
-                    <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setSidebarOpen(false)}></div>
-                    <div className="fixed left-0 top-0 bottom-0 w-80 bg-white shadow-xl z-50">
-                        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                            <h2 className="text-lg font-bold text-gray-800">Filters & Search</h2>
-                            <button onClick={() => setSidebarOpen(false)} className="p-2 hover:bg-gray-100 rounded-lg">
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <div className="h-full overflow-hidden">
-                            <Sidebar />
-                        </div>
-                    </div>
-                </div>
-            )}
-            
-            {/* Desktop Sidebar */}
-            <div className="hidden lg:block">
-                <Sidebar />
-            </div>
-            
-            <main className="flex-1 flex flex-col overflow-hidden">
-                <Header activeView={activeView} setActiveView={setActiveView} />
-                
-                {/* Mobile Filter Button */}
-                <div className="lg:hidden p-3 border-b border-gray-200">
-                    <button 
-                        onClick={() => setSidebarOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-medium touch-target-44 shadow-lg"
-                    >
-                        <Menu size={18} />
-                        Filters & Search
-                    </button>
-                </div>
-                
-                <div className="flex-1 overflow-y-auto p-3 md:p-4 lg:p-6 mobile-spacing">
-                    <div className="animate-fade-in">
-                        {activeView === 'patients' && <PatientList />}
-                        {activeView === 'visits' && <TodayVisits />}
-                        {activeView === 'scheduler' && <Scheduler />}
-                        {activeView === 'settings' && <Settings />}
-                    </div>
-                </div>
-            </main>
-        </div>
+        <MobileFirstLayout 
+            activeView={activeView} 
+            setActiveView={setActiveView} 
+        />
     );
 };
 
@@ -118,15 +53,28 @@ const App: React.FC = () => {
         setTimeout(() => {
             measure();
             console.log('✅ Home Healthcare Management System loaded successfully');
+            
+            // Run production validation
+            if (process.env.NODE_ENV === 'development') {
+                setTimeout(() => {
+                    const validationReport = validateProduction();
+                    logValidationReport(validationReport);
+                }, 2000); // Wait for DOM to settle
+            }
         }, 100);
         
     }, []);
 
     return (
-        <HomeHealthcareProvider>
-            <MobileResponsiveUpdater />
-            <AppContent />
-        </HomeHealthcareProvider>
+        <ErrorBoundary>
+            <HomeHealthcareProvider>
+                <AccessibilityEnhancer>
+                    <MobileResponsiveUpdater />
+                    <AppContent />
+                    <PerformanceMonitor enabled={process.env.NODE_ENV === 'development'} />
+                </AccessibilityEnhancer>
+            </HomeHealthcareProvider>
+        </ErrorBoundary>
     );
 };
 

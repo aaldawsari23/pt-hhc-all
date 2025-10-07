@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import AppWithAuth from './AppWithAuth';
+import App from './App';
 import TestApp from './TestApp';
 import ErrorBoundary from './ErrorBoundary';
 import './index.css';
@@ -19,7 +19,7 @@ const USE_TEST_APP = false;
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      {USE_TEST_APP ? <TestApp /> : <AppWithAuth />}
+      {USE_TEST_APP ? <TestApp /> : <App />}
     </ErrorBoundary>
   </React.StrictMode>
 );

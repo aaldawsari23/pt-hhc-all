@@ -1,4 +1,4 @@
-/* Mobile Performance Optimizations */
+/* Mobile-First Performance Optimizations */
 
 /* Hardware acceleration for smooth animations */
 .gpu-accelerated {
@@ -6,6 +6,24 @@
     transform: translateZ(0);
     backface-visibility: hidden;
     perspective: 1000px;
+}
+
+/* Enhanced mobile viewport handling */
+@viewport {
+    width: device-width;
+    initial-scale: 1;
+}
+
+/* Prevent horizontal scrolling on mobile */
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Improve touch scrolling performance */
+* {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
 }
 
 /* Optimized mobile grid */
@@ -337,6 +355,216 @@
         border-color: #60a5fa;
         box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
     }
+}
+
+/* Enhanced Accessibility Support */
+
+/* High contrast mode */
+.high-contrast {
+    --text-primary: #000000;
+    --text-secondary: #000000;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f0f0f0;
+    --border-color: #000000;
+    --focus-color: #ff0000;
+}
+
+.high-contrast * {
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+    background-color: var(--bg-primary) !important;
+}
+
+.high-contrast .mobile-card {
+    border: 3px solid #000 !important;
+    background: #fff !important;
+    color: #000 !important;
+}
+
+.high-contrast .mobile-button {
+    border: 3px solid #000 !important;
+    background: #fff !important;
+    color: #000 !important;
+}
+
+.high-contrast .mobile-button:hover,
+.high-contrast .mobile-button:focus {
+    background: #000 !important;
+    color: #fff !important;
+}
+
+/* Reduced motion */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+}
+
+/* Large text support */
+.large-text {
+    font-size: 120% !important;
+}
+
+.large-text .text-responsive-sm {
+    font-size: 16px !important;
+}
+
+.large-text .text-responsive-base {
+    font-size: 20px !important;
+}
+
+.large-text .text-responsive-lg {
+    font-size: 24px !important;
+}
+
+/* Screen reader optimizations */
+.screen-reader-active .sr-only:focus {
+    position: absolute !important;
+    width: auto !important;
+    height: auto !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    white-space: normal !important;
+    background: #000 !important;
+    color: #fff !important;
+    z-index: 9999 !important;
+}
+
+/* Enhanced focus indicators for accessibility */
+.screen-reader-active *:focus,
+.screen-reader-active *:focus-visible {
+    outline: 3px solid #ff0000 !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 6px rgba(255, 0, 0, 0.3) !important;
+}
+
+/* RTL Mode Enhancements */
+.rtl-mode {
+    direction: rtl;
+    text-align: right;
+}
+
+.rtl-mode .mobile-grid {
+    direction: rtl;
+}
+
+.rtl-mode .mobile-card {
+    text-align: right;
+}
+
+.rtl-mode .mobile-form-input {
+    text-align: right;
+    direction: rtl;
+}
+
+.rtl-mode .flex {
+    direction: ltr; /* Keep flex direction consistent */
+}
+
+.rtl-mode .flex > * {
+    direction: rtl; /* But content should be RTL */
+}
+
+/* RTL-specific spacing */
+.rtl-mode .mr-2 { margin-right: 0; margin-left: 0.5rem; }
+.rtl-mode .ml-2 { margin-left: 0; margin-right: 0.5rem; }
+.rtl-mode .pr-4 { padding-right: 0; padding-left: 1rem; }
+.rtl-mode .pl-4 { padding-left: 0; padding-right: 1rem; }
+
+/* RTL button adjustments */
+.rtl-mode .mobile-button {
+    direction: rtl;
+}
+
+/* RTL navigation adjustments */
+.rtl-mode .mobile-nav {
+    direction: rtl;
+}
+
+/* Enhanced Arabic text rendering */
+.rtl-mode {
+    font-family: 'Noto Sans Arabic', 'Cairo', 'Amiri', 'IBM Plex Sans Arabic', 'Tahoma', sans-serif;
+    font-feature-settings: 'liga' 1, 'calt' 1, 'kern' 1;
+    text-rendering: optimizeLegibility;
+}
+
+/* Arabic number formatting */
+.rtl-mode .arabic-numbers {
+    unicode-bidi: bidi-override;
+    direction: ltr;
+    display: inline-block;
+}
+
+/* Keyboard navigation improvements */
+.keyboard-navigation *:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.keyboard-navigation .mobile-button:focus {
+    outline: 3px solid #3b82f6;
+    outline-offset: 3px;
+}
+
+/* Focus management for modals */
+.modal-open {
+    overflow: hidden;
+}
+
+.modal-open .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+}
+
+.modal-open .modal-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 50;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Touch target improvements for accessibility */
+.touch-friendly button,
+.touch-friendly input,
+.touch-friendly select,
+.touch-friendly textarea,
+.touch-friendly .clickable {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Error state accessibility */
+.error-state {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+}
+
+.error-message {
+    color: #dc2626;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+/* Success state accessibility */
+.success-state {
+    border-color: #16a34a !important;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1) !important;
+}
+
+.success-message {
+    color: #16a34a;
+    font-weight: 600;
+    margin-top: 0.25rem;
 }
 
 /* Performance optimizations for lists */

@@ -31,23 +31,45 @@ export default defineConfig(({ mode }) => {
         // Optimize bundle size
         rollupOptions: {
           output: {
-            manualChunks: {
+            manualChunks: (id) => {
               // Vendor chunks for better caching
-              vendor: ['react', 'react-dom'],
-              ui: ['lucide-react']
+              if (id.includes('node_modules')) {
+                if (id.includes('react') || id.includes('react-dom')) {
+                  return 'vendor';
+                }
+                if (id.includes('lucide-react')) {
+                  return 'ui';
+                }
+                return 'libs';
+              }
+              
+              // Separate forms into their own chunk
+              if (id.includes('/forms/')) {
+                return 'forms';
+              }
+              
+              // Separate print components
+              if (id.includes('Print') || id.includes('/print/')) {
+                return 'print';
+              }
+              
+              // Separate context and utils
+              if (id.includes('/context/') || id.includes('/utils/')) {
+                return 'core';
+              }
             }
           }
         },
         // Increase chunk size warning limit
-        chunkSizeWarningLimit: 2000,
-        // Disable source maps for faster builds
-        sourcemap: false,
-        // Optimize CSS
-        cssCodeSplit: false,
+        chunkSizeWarningLimit: 1000,
+        // Enable source maps only in development
+        sourcemap: process.env.NODE_ENV === 'development',
+        // Enable CSS code splitting for better caching
+        cssCodeSplit: true,
         // Use esbuild for faster minification
         minify: 'esbuild',
-        // Reduce memory usage
-        target: 'es2015'
+        // Target modern browsers for smaller bundle
+        target: 'es2020'
       },
       // Optimize dependencies
       optimizeDeps: {

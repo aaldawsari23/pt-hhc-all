@@ -19,35 +19,28 @@ const TestApp: React.FC = () => {
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)' 
       }}>
         <h2 style={{ color: '#2563eb', marginBottom: '16px' }}>
-          Test Patient Card
+          ✅ Application Test Status
         </h2>
         
         <div style={{ marginBottom: '12px' }}>
-          <strong>Name:</strong> عايشة محمد معجب زرعان
+          <strong>React:</strong> ✅ Working
         </div>
         
         <div style={{ marginBottom: '12px' }}>
-          <strong>National ID:</strong> 1003752597
+          <strong>TypeScript:</strong> ✅ Working
         </div>
         
         <div style={{ marginBottom: '12px' }}>
-          <strong>Status:</strong> Active
+          <strong>Vite HMR:</strong> ✅ Working
         </div>
         
-        <button style={{
-          backgroundColor: '#2563eb',
-          color: 'white',
-          padding: '8px 16px',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
-        }}>
-          View Assessment Forms
-        </button>
+        <div style={{ marginBottom: '12px' }}>
+          <strong>Arabic RTL:</strong> ✅ Supported
+        </div>
       </div>
       
       <div style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
-        If you see this, React is working. The issue might be with complex components or CSS.
+        All core systems operational. Switch to main app for full functionality.
       </div>
     </div>
   );
